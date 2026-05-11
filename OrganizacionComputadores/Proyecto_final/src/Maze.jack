@@ -13,17 +13,188 @@
 
 class Maze {
 
-    // Aquí van los atributos (Constantes de dimensiones del laberinto, 
-    // tamaño de las celdas en píxeles y el arreglo que almacena los datos del mapa)
+    /* ── Constantes de layout ───────────────────────────────────── */
+    static int ROWS;        // filas del laberinto
+    static int COLS;        // columnas del laberinto
+    static int CELL_SIZE;   // píxeles por celda
 
-    // Aquí el constructor (Inicialización de las constantes de layout, reserva 
-    // de memoria para el arreglo del mapa y llamada a la construcción del mismo)
+    /* ── Datos del mapa ─────────────────────────────────────────── */
+    field Array map;        // Array lineal [ROWS * COLS] de int
 
-    // Métodos (Funciones estáticas para la carga del mapa fila por fila, métodos 
-    // para leer valores de celdas, verificar si son transitables, getters de 
-    // dimensiones, y rutinas para dibujar el laberinto completo o celdas específicas)
+    /* ── Constructor ────────────────────────────────────────────── */
+    constructor Maze new() {
+        var int i;
+        let ROWS      = 11;
+        let COLS      = 17;
+        let CELL_SIZE = 16;   // 17*16=272 px ancho, 11*16=176 px alto → cabe en 512x256
 
-    // Destructor (Liberación de la memoria asignada al arreglo interno del mapa 
-    // y desasignación de la instancia actual)
+        let map = Array.new(ROWS * COLS);
+
+        // Inicializar todo como muros (1)
+        let i = 0;
+        while (i < (ROWS * COLS)) {
+            let map[i] = 1;
+            let i = i + 1;
+        }
+
+        do Maze.buildLayout(map, ROWS, COLS);
+        return this;
+    }
+
+    /* ── Construcción del mapa ──────────────────────────────────── */
+    /**
+     * Define el laberinto hard-coded.
+     * 0 = camino libre, 1 = muro.
+     * Se cargan fila por fila usando setCell().
+     *
+     * Distribución (11 filas × 17 cols):
+     *
+     *  1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+     *  1 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 1
+     *  1 0 1 0 1 0 1 1 1 1 1 0 1 0 1 0 1
+     *  1 0 1 0 0 0 0 0 0 0 1 0 0 0 1 0 1
+     *  1 0 1 1 1 1 1 0 1 0 1 1 1 0 1 0 1
+     *  1 0 0 0 0 0 1 0 1 0 0 0 0 0 1 0 1
+     *  1 1 1 0 1 0 1 0 1 1 1 1 1 0 1 0 1
+     *  1 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 1
+     *  1 0 1 1 1 0 1 1 1 0 1 0 1 0 1 1 1
+     *  1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1
+     *  1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+     */
+    function void buildLayout(Array m, int rows, int cols) {
+        // Fila 0 - todo muros
+        do Maze.setRow(m, cols, 0,  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1);
+        // Fila 1
+        do Maze.setRow(m, cols, 1,  1,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,1);
+        // Fila 2
+        do Maze.setRow(m, cols, 2,  1,0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1);
+        // Fila 3
+        do Maze.setRow(m, cols, 3,  1,0,1,0,0,0,0,0,0,0,1,0,0,0,1,0,1);
+        // Fila 4
+        do Maze.setRow(m, cols, 4,  1,0,1,1,1,1,1,0,1,0,1,1,1,0,1,0,1);
+        // Fila 5
+        do Maze.setRow(m, cols, 5,  1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0,1);
+        // Fila 6
+        do Maze.setRow(m, cols, 6,  1,1,1,0,1,0,1,0,1,1,1,1,1,0,1,0,1);
+        // Fila 7
+        do Maze.setRow(m, cols, 7,  1,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,1);
+        // Fila 8
+        do Maze.setRow(m, cols, 8,  1,0,1,1,1,0,1,1,1,0,1,0,1,0,1,1,1);
+        // Fila 9
+        do Maze.setRow(m, cols, 9,  1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1);
+        // Fila 10 - todo muros
+        do Maze.setRow(m, cols, 10, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1);
+        return;
+    }
+
+    /**
+     * Carga una fila completa en el array lineal.
+     * Jack no admite varargs, por eso se pasan las 17 celdas explícitamente.
+     */
+    function void setRow(Array m, int cols, int row,
+                         int c0,  int c1,  int c2,  int c3,
+                         int c4,  int c5,  int c6,  int c7,
+                         int c8,  int c9,  int c10, int c11,
+                         int c12, int c13, int c14, int c15,
+                         int c16) {
+        var int base;
+        let base = row * cols;
+        let m[base]      = c0;
+        let m[base + 1]  = c1;
+        let m[base + 2]  = c2;
+        let m[base + 3]  = c3;
+        let m[base + 4]  = c4;
+        let m[base + 5]  = c5;
+        let m[base + 6]  = c6;
+        let m[base + 7]  = c7;
+        let m[base + 8]  = c8;
+        let m[base + 9]  = c9;
+        let m[base + 10] = c10;
+        let m[base + 11] = c11;
+        let m[base + 12] = c12;
+        let m[base + 13] = c13;
+        let m[base + 14] = c14;
+        let m[base + 15] = c15;
+        let m[base + 16] = c16;
+        return;
+    }
+
+    /* ── Acceso al mapa ─────────────────────────────────────────── */
+
+    /** Retorna el valor de la celda (row, col). */
+    method int getCell(int row, int col) {
+        return map[(row * COLS) + col];
+    }
+
+    /** Retorna true si (row, col) es un camino libre. */
+    method boolean isPassable(int row, int col) {
+        if (row < 0)    { return false; }
+        if (col < 0)    { return false; }
+        if (row > (ROWS - 1)) { return false; }
+        if (col > (COLS - 1)) { return false; }
+        return (map[(row * COLS) + col] = 0);
+    }
+
+    /* ── Getters de constantes ──────────────────────────────────── */
+    method int getRows()     { return ROWS; }
+    method int getCols()     { return COLS; }
+    method int getCellSize() { return CELL_SIZE; }
+
+    /* ── Renderizado ────────────────────────────────────────────── */
+
+    /** Dibuja el laberinto completo en pantalla. */
+    method void draw() {
+        var int r, c, px, py;
+        let r = 0;
+        while (r < ROWS) {
+            let c = 0;
+            while (c < COLS) {
+                let px = c * CELL_SIZE;
+                let py = r * CELL_SIZE;
+                if (map[(r * COLS) + c] = 1) {
+                    // Muro: rectángulo negro relleno
+                    do Screen.setColor(true);
+                    do Screen.drawRectangle(px, py,
+                                            px + CELL_SIZE - 1,
+                                            py + CELL_SIZE - 1);
+                } else {
+                    // Camino: rectángulo blanco
+                    do Screen.setColor(false);
+                    do Screen.drawRectangle(px, py,
+                                            px + CELL_SIZE - 1,
+                                            py + CELL_SIZE - 1);
+                }
+                let c = c + 1;
+            }
+            let r = r + 1;
+        }
+        return;
+    }
+
+    /**
+     * Redibuja SOLO la celda (row, col) como camino libre (limpia sprites viejos).
+     * Úsalo para borrar la posición anterior de Player / Enemy.
+     */
+    method void drawCell(int row, int col) {
+        var int px, py;
+        let px = col * CELL_SIZE;
+        let py = row * CELL_SIZE;
+        if (map[(row * COLS) + col] = 1) {
+            do Screen.setColor(true);
+        } else {
+            do Screen.setColor(false);
+        }
+        do Screen.drawRectangle(px, py,
+                                px + CELL_SIZE - 1,
+                                py + CELL_SIZE - 1);
+        return;
+    }
+
+    /* ── Destructor ─────────────────────────────────────────────── */
+    method void dispose() {
+        do map.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
 
 }

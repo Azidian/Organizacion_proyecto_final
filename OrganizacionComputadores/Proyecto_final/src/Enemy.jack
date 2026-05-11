@@ -12,17 +12,30 @@
  */
 
 class Enemy {
+    field int row, col;
+    field int cellSize;
 
-    // Aquí van los atributos (Posición actual en el grid, referencia al 
-    // laberinto, tamaño de la celda y variables de control del temporizador de movimiento)
+    constructor Enemy new(Maze theMaze, int startRow, int startCol) {
+        let row = startRow;
+        let col = startCol;
+        return this;
+    }
 
-    // Aquí el constructor (Inicialización de coordenadas iniciales, asignación 
-    // de la referencia del mapa y configuración del intervalo de velocidad)
+    method int getRow() { return row; }
+    method int getCol() { return col; }
 
-    // Métodos (Getters de posición, lógica central de actualización de la IA 
-    // para perseguir al jugador, cálculo matemático de la distancia Manhattan 
-    // y rutinas de renderizado del sprite en pantalla)
+    /** IA del enemigo (Vacía para Fase 1) */
+    method void update(int pRow, int pCol) {
+        return;
+    }
 
-    // Destructor (Liberación final de la memoria asignada a la instancia actual)
+    /** Renderizado del enemigo (Vacío o básico para Fase 1) */
+    method void draw() {
+        return;
+    }
 
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
 }
