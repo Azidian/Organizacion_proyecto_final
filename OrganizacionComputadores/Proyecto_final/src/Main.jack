@@ -4,7 +4,11 @@
  * Inicializa y ejecuta el game loop principal.
  */
 class Main {
-
-    // Métodos (Función principal estática main que inicializa el objeto Game)
-    
+    function void main() {
+        var Game game;
+        let game = Game.new();
+        do game.run();
+        do game.dispose();
+        return;
+    }
 }

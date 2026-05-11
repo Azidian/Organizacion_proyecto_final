@@ -2,22 +2,115 @@
  * Player.jack
  * Representa al jugador humano controlado por teclado.
  *
- * Estructura principal de la clase encargada de almacenar la posición,
- * procesar las entradas del usuario y gestionar el renderizado visual.
+ * Sprite: cuadrado de (CELL_SIZE-2) px relleno centrado en la celda.
+ * Teclas: W/A/S/D o flechas del cursor.
+ *
+ * Keycodes Jack estándar:
+ *   130 = ArrowLeft   131 = ArrowUp
+ *   132 = ArrowRight  133 = ArrowDown
+ *   65  = 'a'         68  = 'd'
+ *   87  = 'w'         83  = 's'
  */
- 
 class Player {
 
-    // Aquí van los atributos (Coordenadas actuales en la matriz, 
-    // referencia al objeto del laberinto y caché del tamaño de celda)
+    field int row, col;         // posición en el grid
+    field Maze maze;            // referencia al laberinto
+    field int cellSize;         // píxeles por celda (cache)
 
-    // Aquí el constructor (Asignación de la referencia del mapa e 
-    // inicialización de las coordenadas de inicio en el grid)
+    /* ── Constructor ────────────────────────────────────────────── */
+    constructor Player new(Maze theMaze, int startRow, int startCol) {
+        let maze     = theMaze;
+        let row      = startRow;
+        let col      = startCol;
+        let cellSize = maze.getCellSize();
+        return this;
+    }
 
-    // Métodos (Getters de posición, lectura de las teclas de dirección 
-    // con validación de movimiento, y renderizado del sprite 
-    // de la cara feliz)
+    /* ── Getters ────────────────────────────────────────────────── */
+    method int getRow() { return row; }
+    method int getCol() { return col; }
 
-    // Destructor (Liberación de la memoria)
+    /* ── Input y movimiento ─────────────────────────────────────── */
 
+    /**
+     * Lee el teclado y mueve al jugador si la celda destino es libre.
+     * Devuelve true si se produjo movimiento (para re-dibujar).
+     */
+    method boolean handleInput() {
+        var int key;
+        var int newRow, newCol;
+        var boolean moved;
+
+        let key    = Keyboard.keyPressed();
+        let newRow = row;
+        let newCol = col;
+        let moved  = false;
+
+        // Arriba: W (87) o ArrowUp (131)
+        if ((key = 87) | (key = 131)) { let newRow = row - 1; }
+        // Abajo: S (83) o ArrowDown (133)
+        if ((key = 83) | (key = 133)) { let newRow = row + 1; }
+        // Izquierda: A (65) o ArrowLeft (130)
+        if ((key = 65) | (key = 130)) { let newCol = col - 1; }
+        // Derecha: D (68) o ArrowRight (132)
+        if ((key = 68) | (key = 132)) { let newCol = col + 1; }
+
+        if (maze.isPassable(newRow, newCol)) {
+            if ((newRow = row) & (newCol = col)) {
+                // Sin cambio
+            } else {
+                do maze.drawCell(row, col); // borrar posición anterior
+                let row  = newRow;
+                let col  = newCol;
+                let moved = true;
+            }
+        }
+        return moved;
+    }
+
+    /* ── Renderizado ────────────────────────────────────────────── */
+
+    /**
+     * Dibuja el sprite del jugador (cuadrado blanco con borde negro)
+     * centrado en su celda actual.
+     */
+    /**
+     * Dibuja el sprite del jugador: Carita feliz blanca con borde negro.
+     */
+    method void draw() {
+        var int px, py, margin;
+        let px     = col * cellSize;
+        let py     = row * cellSize;
+        let margin = 3;
+
+        // Fondo blanco de la cara
+        do Screen.setColor(false);
+        do Screen.drawRectangle(px + margin, py + margin,
+                                px + cellSize - margin - 1,
+                                py + cellSize - margin - 1);
+
+        // Borde negro exterior
+        do Screen.setColor(true);
+        do Screen.drawLine(px + margin, py + margin, px + cellSize - margin - 1, py + margin);
+        do Screen.drawLine(px + margin, py + cellSize - margin - 1, px + cellSize - margin - 1, py + cellSize - margin - 1);
+        do Screen.drawLine(px + margin, py + margin, px + margin, py + cellSize - margin - 1);
+        do Screen.drawLine(px + cellSize - margin - 1, py + margin, px + cellSize - margin - 1, py + cellSize - margin - 1);
+
+        // Ojos negros
+        do Screen.drawRectangle(px + 5, py + 6, px + 6, py + 7);
+        do Screen.drawRectangle(px + 9, py + 6, px + 10, py + 7);
+
+        // Sonrisa (boca feliz)
+        do Screen.drawLine(px + 6, py + 10, px + 8, py + 10);
+        do Screen.drawLine(px + 5, py + 9, px + 6, py + 10);
+        do Screen.drawLine(px + 8, py + 10, px + 9, py + 9);
+
+        return;
+    }
+
+    /* ── Destructor ─────────────────────────────────────────────── */
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
 }

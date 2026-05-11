@@ -20,18 +20,272 @@
  *   5. Redibujar entidades
  *   6. Esperar un tick (Sys.wait)
  */
-
 class Game {
 
-    // Aquí van los atributos (Constantes de estado estáticas, referencias 
-    // a los objetos del entorno y variables de control de la meta)
+    /* ── Constantes de estado ────────────────────────────────────── */
+    static int STATE_START;
+    static int STATE_PLAYING;
+    static int STATE_WIN;
+    static int STATE_LOSE;
+    static int STATE_PAUSED;
 
-    // Aquí el constructor (Inicialización de estados, instanciación de 
-    // las entidades en el mapa y configuración inicial del juego)
+    /* ── Campos ──────────────────────────────────────────────────── */
+    field Maze   maze;
+    field Player player;
+    field Enemy  enemy;
+    field int    state;
 
-    // Métodos (Funciones y rutinas para el control del ciclo principal, 
-    // renderizado de pantallas de inicio/fin, procesamiento de ticks, 
-    // manejo de interrupciones de pausa y reinicio dinámico de memoria)
+    // Celda objetivo (exit): jugador debe llegar aquí para ganar
+    field int exitRow, exitCol;
 
-    // Destructor (Liberación final de la memoria)
+    /* ── Constructor ─────────────────────────────────────────────── */
+    constructor Game new() {
+        let STATE_START   = 0;
+        let STATE_PLAYING = 1;
+        let STATE_WIN     = 2;
+        let STATE_LOSE    = 3;
+        let STATE_PAUSED  = 4;
+
+        let maze   = Maze.new();
+        // Jugador empieza en (1,1) – esquina superior izquierda libre
+        let player = Player.new(maze, 1, 1);
+        // Enemigo empieza en (9,15) – esquina inferior derecha libre
+        let enemy  = Enemy.new(maze, 9, 15);
+
+        // Celda de salida (exit): (9,15) → al colocar el enemigo allí
+        // usamos otra posición libre como exit: (1,15)
+        let exitRow = 1;
+        let exitCol = 15;
+
+        let state = STATE_START;
+        return this;
+    }
+
+    /* ── Ciclo principal ─────────────────────────────────────────── */
+    /* ── Ciclo principal ─────────────────────────────────────────── */
+    method void run() {
+        var boolean running;
+        let running = true;
+
+        while (running) {
+            if (state = STATE_START)   { do showStart(); }
+            if (state = STATE_PLAYING) { do playTick(); }
+            if (state = STATE_PAUSED)  { do handlePause(); } // <-- NUEVO
+            if (state = STATE_WIN)     { let running = handleGameOver(true); }
+            if (state = STATE_LOSE)    { let running = handleGameOver(false); }
+        }
+        return;
+    }
+
+    /* ── Pantalla de inicio ──────────────────────────────────────── */
+    method void showStart() {
+        do Screen.clearScreen();
+        do Output.moveCursor(3, 10);
+        do Output.printString("MAZE INTELLIGENCE");
+        do Output.moveCursor(6, 8);
+        do Output.printString("Escapa del enemigo!");
+        do Output.moveCursor(8, 6);
+        do Output.printString("Controles: W A S D");
+        do Output.moveCursor(10, 5);
+        do Output.printString("Llega a la salida [X]");
+        do Output.moveCursor(13, 7);
+        do Output.printString("Presiona SPACE para");
+        do Output.moveCursor(14, 9);
+        do Output.printString("empezar...");
+
+        // Esperar Space (32)
+        while (~(Keyboard.keyPressed() = 32)) { }
+        while (Keyboard.keyPressed() = 32)    { }  // esperar que suelte
+
+        // Preparar pantalla de juego
+        do Screen.clearScreen();
+        do maze.draw();
+        do drawExit();
+        do player.draw();
+        do enemy.draw();
+        let state = STATE_PLAYING;
+        return;
+    }
+
+    /* ── Un tick de juego ────────────────────────────────────────── */
+    method void playTick() {
+
+        // <-- DETECTAR PAUSA (P = 80) -->
+        if (Keyboard.keyPressed() = 80) {
+            // Esperar a que suelte la tecla para evitar rebotes
+            while (Keyboard.keyPressed() = 80) { }
+            let state = STATE_PAUSED;
+            return; // Salimos inmediatamente, congelando el juego
+        }
+
+        // 1. Input del jugador
+        do player.handleInput();
+
+        // 2. IA del enemigo
+        do enemy.update(player.getRow(), player.getCol());
+
+        // 3. Redibujar entidades (el mapa se redibuja celda a celda
+        //    solo donde hubo movimiento, dentro de Player/Enemy)
+        do drawExit();   // re-dibujar exit por si fue pisado
+        do player.draw();
+        do enemy.draw();
+
+        // 4. Detectar captura (misma celda)
+        if ((player.getRow() = enemy.getRow()) &
+            (player.getCol() = enemy.getCol())) {
+            let state = STATE_LOSE;
+        }
+
+        // 5. Detectar victoria (llegar a exit)
+        if ((player.getRow() = exitRow) &
+            (player.getCol() = exitCol)) {
+            let state = STATE_WIN;
+        }
+
+        // 6. Esperar (~16 ms → ~60 fps, ajustar si va muy rápido)
+        do Sys.wait(16);
+        return;
+    }
+
+    /* ── Dibujar celda de salida ─────────────────────────────────── */
+    /**
+     * Dibuja una 'X' en la celda de salida para que el jugador
+     * sepa a dónde dirigirse.
+     */
+    method void drawExit() {
+        var int px, py, cs;
+        let cs = maze.getCellSize();
+        let px = exitCol * cs;
+        let py = exitRow * cs;
+
+        // Fondo blanco
+        do Screen.setColor(false);
+        do Screen.drawRectangle(px + 1, py + 1, px + cs - 2, py + cs - 2);
+
+        // Aspa negra (X)
+        do Screen.setColor(true);
+        do Screen.drawLine(px + 2, py + 2, px + cs - 3, py + cs - 3);
+        do Screen.drawLine(px + cs - 3, py + 2, px + 2, py + cs - 3);
+        return;
+    }
+
+    /* ── Pantalla de fin ─────────────────────────────────────────── */
+    /* ── Pantalla de fin y Reinicio Dinámico ─────────────────────── */
+    
+    /**
+     * Muestra el mensaje de victoria/derrota y espera confirmación 
+     * para reiniciar o salir del juego completamente.
+     */
+    method boolean handleGameOver(boolean won) {
+        var int key;
+        var boolean keepPlaying;
+        
+        do Screen.clearScreen();
+        if (won) {
+            do Output.moveCursor(5, 9);
+            do Output.printString("!ESCAPASTE!");
+            do Output.moveCursor(7, 6);
+            do Output.printString("Felicitaciones :)");
+        } else {
+            do Output.moveCursor(5, 8);
+            do Output.printString("TE CAPTURARON!");
+            do Output.moveCursor(7, 7);
+            do Output.printString("Intentalo de nuevo");
+        }
+        
+        do Output.moveCursor(11, 4);
+        do Output.printString("Presiona [R] para REINICIAR");
+        do Output.moveCursor(13, 4);
+        do Output.printString("Presiona [Q] para SALIR");
+
+        // Esperar hasta que presione R (82) o Q (81)
+        let key = 0;
+        while (~((key = 82) | (key = 81))) {
+            let key = Keyboard.keyPressed();
+        }
+        
+        // Esperar a que suelte la tecla
+        while (~(Keyboard.keyPressed() = 0)) { }
+
+        if (key = 82) { 
+            // Presionó R: Reiniciamos las entidades
+            do restartGame();
+            let keepPlaying = true;
+        } else {        
+            // Presionó Q: Salimos del bucle
+            let keepPlaying = false;
+        }
+        
+        return keepPlaying;
+    }
+
+    /**
+     * Libera la memoria de los personajes actuales y los reubica en 
+     * sus posiciones iniciales para una nueva partida.
+     */
+    method void restartGame() {
+        do Screen.clearScreen();
+        
+        // Evitamos fugas de memoria liberando las instancias previas
+        do player.dispose();
+        do enemy.dispose();
+        
+        // Re-creamos jugador y enemigo en sus coordenadas iniciales
+        let player = Player.new(maze, 1, 1);
+        let enemy  = Enemy.new(maze, 9, 15);
+        
+        // Redibujamos el entorno
+        do maze.draw();
+        do drawExit();
+        do player.draw();
+        do enemy.draw();
+        
+        let state = STATE_PLAYING;
+        return;
+    }
+
+    /* ── Pantalla de Pausa (Ventana Aparte) ──────────────────────── */
+    /**
+     * Limpia la pantalla para mostrar un menú dedicado de pausa,
+     * y espera a que el usuario presione [P] para restaurar el juego.
+     */
+    method void handlePause() {
+        // 1. Limpiar la pantalla inmediatamente para que se vea como una pantalla aparte
+        do Screen.clearScreen();
+
+        // 2. Imprimir el mensaje de pausa centrado en la nueva pantalla limpia
+        do Output.moveCursor(5, 11);
+        do Output.printString("JUEGO EN PAUSA");
+        do Output.moveCursor(7, 6);
+        do Output.printString("Presiona [P] para reanudar");
+
+        // 3. Esperar a que SUELTE la tecla con la que acaba de pausar
+        while (~(Keyboard.keyPressed() = 0)) { }
+
+        // 4. Esperar a que VUELVA A PRESIONAR P (80) o p (112) para reanudar
+        while (~((Keyboard.keyPressed() = 80) | (Keyboard.keyPressed() = 112))) { }
+
+        // 5. Esperar a que suelte la tecla para reanudar limpiamente
+        while (~(Keyboard.keyPressed() = 0)) { }
+
+        // 6. Limpiar la pantalla y restaurar el laberinto y personajes exactamente como estaban
+        do Screen.clearScreen();
+        do maze.draw();
+        do drawExit();
+        do player.draw();
+        do enemy.draw();
+
+        // Regresar al estado activo
+        let state = STATE_PLAYING;
+        return;
+    }
+
+    /* ── Destructor ──────────────────────────────────────────────── */
+    method void dispose() {
+        do maze.dispose();
+        do player.dispose();
+        do enemy.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
 }
