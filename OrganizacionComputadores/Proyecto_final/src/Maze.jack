@@ -1,0 +1,29 @@
+/**
+ * Maze.jack
+ * Representa el laberinto como una matriz 2D.
+ * * Estructura principal de la clase encargada del entorno,
+ * renderizado gráfico del mapa y validación de caminos.
+ *
+ * Celdas: 
+ * 0 = camino libre
+ * 1 = muro
+ *
+ * Dimensiones: ROWS x COLS celdas de CELL_SIZE píxeles cada una.
+ */
+
+class Maze {
+
+    // Aquí van los atributos (Constantes de dimensiones del laberinto, 
+    // tamaño de las celdas en píxeles y el arreglo que almacena los datos del mapa)
+
+    // Aquí el constructor (Inicialización de las constantes de layout, reserva 
+    // de memoria para el arreglo del mapa y llamada a la construcción del mismo)
+
+    // Métodos (Funciones estáticas para la carga del mapa fila por fila, métodos 
+    // para leer valores de celdas, verificar si son transitables, getters de 
+    // dimensiones, y rutinas para dibujar el laberinto completo o celdas específicas)
+
+    // Destructor (Liberación de la memoria asignada al arreglo interno del mapa 
+    // y desasignación de la instancia actual)
+
+}

@@ -1,0 +1,28 @@
+/**
+ * Enemy.jack
+ * Agente enemigo con IA basado en distancia Manhattan (heurística greedy).
+ *
+ * Estructura principal de la clase encargada del comportamiento,
+ * movimiento autónomo y renderizado del adversario.
+ *
+ * Lógica de persecución:
+ * Evalúa vecinos disponibles (arriba, abajo, izquierda, derecha) y elige 
+ * el que minimice la distancia al jugador.
+ * El movimiento se regula mediante un temporizador (ticks) para ajustar la dificultad.
+ */
+
+class Enemy {
+
+    // Aquí van los atributos (Posición actual en el grid, referencia al 
+    // laberinto, tamaño de la celda y variables de control del temporizador de movimiento)
+
+    // Aquí el constructor (Inicialización de coordenadas iniciales, asignación 
+    // de la referencia del mapa y configuración del intervalo de velocidad)
+
+    // Métodos (Getters de posición, lógica central de actualización de la IA 
+    // para perseguir al jugador, cálculo matemático de la distancia Manhattan 
+    // y rutinas de renderizado del sprite en pantalla)
+
+    // Destructor (Liberación final de la memoria asignada a la instancia actual)
+
+}
