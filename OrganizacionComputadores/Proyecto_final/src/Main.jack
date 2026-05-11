@@ -1,0 +1,10 @@
+/**
+ * Main.jack
+ * Punto de entrada del juego Maze Intelligence.
+ * Inicializa y ejecuta el game loop principal.
+ */
+class Main {
+
+    // Métodos (Función principal estática main que inicializa el objeto Game)
+    
+}

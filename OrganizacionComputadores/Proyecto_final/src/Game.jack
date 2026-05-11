@@ -1,0 +1,37 @@
+ /**
+ * Game.jack
+ * Controlador principal del juego.
+ * 
+ * Estructura principal de la clase encargada del flujo central,
+ * renderizado y administración de la máquina de estados.
+ *
+ * Estados:
+ *   STATE_START   (0) – pantalla de bienvenida, espera tecla Space
+ *   STATE_PLAYING (1) – game loop activo
+ *   STATE_WIN     (2) – jugador escapó (llegó a la celda objetivo)
+ *   STATE_LOSE    (3) – jugador fue capturado
+ *   STATE_PAUSED  (4) – usuario puede pausar el juego 
+ *
+ * Game loop (STATE_PLAYING):
+ *   1. Leer input → mover Player
+ *   2. Actualizar Enemy (IA)
+ *   3. Detectar colisión Player–Enemy
+ *   4. Detectar condición de victoria
+ *   5. Redibujar entidades
+ *   6. Esperar un tick (Sys.wait)
+ */
+
+class Game {
+
+    // Aquí van los atributos (Constantes de estado estáticas, referencias 
+    // a los objetos del entorno y variables de control de la meta)
+
+    // Aquí el constructor (Inicialización de estados, instanciación de 
+    // las entidades en el mapa y configuración inicial del juego)
+
+    // Métodos (Funciones y rutinas para el control del ciclo principal, 
+    // renderizado de pantallas de inicio/fin, procesamiento de ticks, 
+    // manejo de interrupciones de pausa y reinicio dinámico de memoria)
+
+    // Destructor (Liberación final de la memoria)
+}

@@ -1,0 +1,23 @@
+/**
+ * Player.jack
+ * Representa al jugador humano controlado por teclado.
+ *
+ * Estructura principal de la clase encargada de almacenar la posición,
+ * procesar las entradas del usuario y gestionar el renderizado visual.
+ */
+ 
+class Player {
+
+    // Aquí van los atributos (Coordenadas actuales en la matriz, 
+    // referencia al objeto del laberinto y caché del tamaño de celda)
+
+    // Aquí el constructor (Asignación de la referencia del mapa e 
+    // inicialización de las coordenadas de inicio en el grid)
+
+    // Métodos (Getters de posición, lectura de las teclas de dirección 
+    // con validación de movimiento, y renderizado del sprite 
+    // de la cara feliz)
+
+    // Destructor (Liberación de la memoria)
+
+}
