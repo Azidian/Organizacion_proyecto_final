@@ -47,7 +47,7 @@ class Maze {
      * 0 = camino libre, 1 = muro.
      * Se cargan fila por fila usando setCell().
      *
-     * Distribución (11 filas × 17 cols):
+     * Distribución (11 filas × 17 columnas):
      *
      *  1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
      *  1 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 1

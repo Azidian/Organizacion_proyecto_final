@@ -38,6 +38,10 @@ class Game {
     // Celda objetivo (exit): jugador debe llegar aquí para ganar
     field int exitRow, exitCol;
 
+    // Cooldown independiente del jugador (ticks de 10 ms)
+    // El jugador sólo se mueve cuando playerTimer >= PLAYER_INTERVAL
+    field int playerTimer;
+
     /* ── Constructor ─────────────────────────────────────────────── */
     constructor Game new() {
         let STATE_START   = 0;
@@ -57,6 +61,7 @@ class Game {
         let exitRow = 1;
         let exitCol = 15;
 
+        let playerTimer = 10;  // empieza listo para moverse
         let state = STATE_START;
         return this;
     }
@@ -108,25 +113,34 @@ class Game {
     }
 
     /* ── Un tick de juego ────────────────────────────────────────── */
+    /**
+     * El game loop corre a ticks fijos de 10 ms.
+     * - Jugador:  cooldown propio de 10 ticks (≈100 ms).
+     * - Enemigo:  cooldown propio interno en Enemy (moveInterval ticks).
+     * Ambos son completamente independientes entre sí.
+     */
     method void playTick() {
 
         // <-- DETECTAR PAUSA (P = 80) -->
         if (Keyboard.keyPressed() = 80) {
-            // Esperar a que suelte la tecla para evitar rebotes
             while (Keyboard.keyPressed() = 80) { }
             let state = STATE_PAUSED;
-            return; // Salimos inmediatamente, congelando el juego
+            return;
         }
 
-        // 1. Input del jugador
-        do player.handleInput();
+        // 1. Input del jugador — sólo si su cooldown lo permite
+        let playerTimer = playerTimer + 1;
+        if (playerTimer > 10) {
+            if (player.handleInput()) {
+                let playerTimer = 0;   // movimiento exitoso → reinicia cooldown
+            }
+        }
 
-        // 2. IA del enemigo
+        // 2. IA del enemigo — siempre, con su propio timer interno
         do enemy.update(player.getRow(), player.getCol());
 
-        // 3. Redibujar entidades (el mapa se redibuja celda a celda
-        //    solo donde hubo movimiento, dentro de Player/Enemy)
-        do drawExit();   // re-dibujar exit por si fue pisado
+        // 3. Redibujar entidades
+        do drawExit();
         do player.draw();
         do enemy.draw();
 
@@ -142,10 +156,10 @@ class Game {
             let state = STATE_WIN;
         }
 
-        // 6. Esperar (~16 ms → ~60 fps, ajustar si va muy rápido)
-        do Sys.wait(16);
+        // 6. Tick fijo de 10 ms — ambos timers son independientes del input
+        do Sys.wait(2);
         return;
-    }
+    }   
 
     /* ── Dibujar celda de salida ─────────────────────────────────── */
     /**
@@ -233,6 +247,7 @@ class Game {
         // Re-creamos jugador y enemigo en sus coordenadas iniciales
         let player = Player.new(maze, 1, 1);
         let enemy  = Enemy.new(maze, 9, 15);
+        let playerTimer = 10;  // reiniciar cooldown del jugador
         
         // Redibujamos el entorno
         do maze.draw();
