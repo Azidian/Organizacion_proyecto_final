@@ -1,6 +1,7 @@
 /**
  * Game.jack
  * Controlador principal de Maze Intelligence - 3 niveles.
+ * AHORA MAS LIMPIO: Delega todos los dibujos a la clase UI.
  */
 class Game {
 
@@ -41,7 +42,7 @@ class Game {
         let currentLevel    = 1;
         let state           = STATE_START;
         let hasSecondEnemy  = false;
-        let attempts        = 0; // Inicializamos los intentos (Maximo de intentos 2)
+        let attempts        = 0; // Inicializamos los intentos
         let maze            = null;
         let player          = null;
         let enemy1          = null;
@@ -79,7 +80,7 @@ class Game {
     method void handleLevelList() {
         do UI.drawLevelList();
         let currentLevel = 1;
-        let attempts = 0; 
+        let attempts = 0; // Reinicia intentos al iniciar un juego nuevo
         do loadLevel(currentLevel);
         let state = STATE_LEVEL;
         return;
@@ -107,7 +108,7 @@ class Game {
         
         // Avanzar de nivel
         let currentLevel = currentLevel + 1;
-        let attempts = 0; // Reinicia intentos al pasar el nivel exitosamente
+        let attempts = 0; // Reinicia intentos al pasar de nivel exitosamente
         do loadLevel(currentLevel);
         let state = STATE_LEVEL;
         return true;
@@ -125,13 +126,13 @@ class Game {
             return false; // Fuerza el cierre del juego porque se acabaron los intentos
         }
         
-        if ((key = 82) | (key = 114)) { 
+        if ((key = 82) | (key = 114)) { // Reintentar (R)
             do loadLevel(currentLevel);
             let state = STATE_LEVEL;
             return true;
         }
         
-        return false; 
+        return false; // Salir (Q)
     }
 
     method boolean handleVictory() {
@@ -159,6 +160,7 @@ class Game {
         let maze = Maze.new(lvl);
         let safeDist = 3;
 
+        // COMENTARIO: CONFIGURACIÓN DE VELOCIDAD COMPARTIDA
         // El 'interval' determina los ticks entre movimientos del jugador y enemigos.
         // Un valor menor hace que el movimiento sea más rápido. Ambos comparten esta misma velocidad.
         if (lvl = 1) {
@@ -177,12 +179,12 @@ class Game {
             let pRow = 9;  let pCol = 1;
             let exitRow = 5; let exitCol = 15;
             let interval = 4; // Jugador
-            let enemyInterval = 5; 
-            let safeDist = 8; 
+            let enemyInterval = 5; // Serpientes ligeramente más lentas
+            let safeDist = 8; // Zona segura amplia alrededor del punto de inicio
             let hasSecondEnemy = true;
         }
 
-        // --- ZONA SEGURA (PARA ENEMY 1) ---
+        // --- SPAWN ALEATORIO CON ZONA SEGURA (PARA ENEMY 1) ---
         let found = false;
         while (~found) {
             let e1Row = Random.nextInt(maze.getRows());
@@ -205,7 +207,7 @@ class Game {
             }
         }
 
-        // ---  ZONA SEGURA (PARA ENEMY 2 - SOLO NIVEL 3) ---
+        // --- SPAWN ALEATORIO CON ZONA SEGURA (PARA ENEMY 2 - SOLO NIVEL 3) ---
         if (hasSecondEnemy) {
             let found = false;
             while (~found) {
@@ -220,7 +222,8 @@ class Game {
                     if (distCol < 0) { let distCol = -distCol; }
                     let dist = dist + distCol;
                     
-                    // Garantiza que la segunda serpiente respete la distancia mínima
+                    // COMENTARIO: CONFIGURACIÓN DE ZONA SEGURA (ENEMIGO 2)
+                    // Garantiza que la segunda serpiente respete la distancia mínima y no solape con otros elementos.
                     if ((dist > safeDist) & (~((e2Row = exitRow) & (e2Col = exitCol))) & (~((e2Row = e1Row) & (e2Col = e1Col)))) {
                         let found = true;
                     }
@@ -270,7 +273,7 @@ class Game {
         return;
     }
 
-    /* ──  Activo del Nivel ────────────────────────────── */
+    /* ── Renderizado Activo del Nivel ────────────────────────────── */
     method void drawGameScreen() {
         do Screen.clearScreen();
         do maze.draw();

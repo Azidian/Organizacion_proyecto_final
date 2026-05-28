@@ -1,0 +1,425 @@
+/**
+ * UI.jack
+ * Clase estática encargada de dibujar todas las interfaces, menús 
+ * y pantallas de transición del juego. Separa la presentación de la lógica.
+ */
+class UI {
+
+    /* ════════════════════════════════════════════════════════════
+       PANTALLA DE INICIO
+       ════════════════════════════════════════════════════════════ */
+    function void drawStart() {
+        var int i, px, py;
+        do Screen.clearScreen();
+
+        do UI.drawFrame();
+        do UI.drawTitle();
+        do Output.moveCursor(5, 21);
+        do Output.printString("I N T E L L I G E N C E");
+
+        do Output.moveCursor(9, 23);
+        do Output.printString("C O N T R O L E S");
+
+        do Output.moveCursor(11, 21);
+        do Output.printString("[W] [A] [S] [D] o ");
+
+        // Dibujando flechitas
+        do Screen.setColor(true);
+        let py = 122; 
+        let px = 320; 
+        do Screen.drawLine(px, py+4, px+8, py+4);
+        do Screen.drawLine(px, py+4, px+3, py+1);
+        do Screen.drawLine(px, py+4, px+3, py+7);
+        let px = 332;
+        do Screen.drawLine(px+4, py, px+4, py+8);
+        do Screen.drawLine(px+4, py, px+1, py+3);
+        do Screen.drawLine(px+4, py, px+7, py+3);
+        let px = 344;
+        do Screen.drawLine(px+4, py, px+4, py+8);
+        do Screen.drawLine(px+4, py+8, px+1, py+5);
+        do Screen.drawLine(px+4, py+8, px+7, py+5);
+        let px = 356;
+        do Screen.drawLine(px, py+4, px+8, py+4);
+        do Screen.drawLine(px+8, py+4, px+5, py+1);
+        do Screen.drawLine(px+8, py+4, px+5, py+7);
+
+        do Output.moveCursor(14, 20);
+        do Output.printString("Presiona [P] para pausar");
+
+        do Output.moveCursor(18, 22);
+        do Output.printString("[ PRESIONA ESPACIO ]");
+        do Output.moveCursor(19, 26);
+        do Output.printString("para seguir");
+
+        // Animación y espera
+        let i = 0;
+        while (~(Keyboard.keyPressed() = 32)) {
+            do Random.addSeed(1);
+            let i = i + 1;
+            if (i = 30) {
+                do Output.moveCursor(18, 22);
+                do Output.printString("                    ");
+                let i = 0;
+            }
+            if (i = 15) {
+                do Output.moveCursor(18, 22);
+                do Output.printString("[ PRESIONA ESPACIO ]");
+            }
+            do Sys.wait(16);
+        }
+        while (Keyboard.keyPressed() = 32) { }
+        return;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       PANTALLA DE LISTA DE NIVELES
+       ════════════════════════════════════════════════════════════ */
+    function void drawLevelList() {
+        var int i;
+        do Screen.clearScreen();
+        do UI.drawFrame();
+        do UI.drawNivelesTitle();
+
+        do Output.moveCursor(7, 21);
+        do Output.printString("Nivel 1: Raton escapa del Gato");
+        do Screen.setColor(true); do Screen.drawLine(266, 78, 268, 76); // Tilde Raton
+
+        do Output.moveCursor(11, 21);
+        do Output.printString("Nivel 2: Ardilla escapa del Gato");
+
+        do Output.moveCursor(15, 21);
+        do Output.printString("Nivel 3: Pajaro vs 2 Serpientes!");
+        do Screen.setColor(true); do Screen.drawLine(250, 166, 252, 164); // Tilde Pajaro
+
+        do UI.drawMiniIcons();
+
+        do Output.moveCursor(20, 22);
+        do Output.printString("[ PRESIONA ESPACIO ]");
+        do Output.moveCursor(21, 25);
+        do Output.printString("para comenzar");
+
+        let i = 0;
+        while (~(Keyboard.keyPressed() = 32)) {
+            do Random.addSeed(1);
+            let i = i + 1;
+            if (i = 30) {
+                do Output.moveCursor(20, 22);
+                do Output.printString("                    ");
+                let i = 0;
+            }
+            if (i = 15) {
+                do Output.moveCursor(20, 22);
+                do Output.printString("[ PRESIONA ESPACIO ]");
+            }
+            do Sys.wait(16);
+        }
+        while (Keyboard.keyPressed() = 32) { }
+        return;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       PRESENTACIÓN INDIVIDUAL DE NIVEL
+       ════════════════════════════════════════════════════════════ */
+    function void drawLevelIntro(int currentLevel) {
+        do Screen.clearScreen();
+        do UI.drawFrame();
+
+        do UI.drawLargeNivelTitle(currentLevel);
+
+        if (currentLevel = 1) { 
+            do Output.moveCursor(9, 25); do Output.printString("Raton  vs  Gato"); 
+            do Screen.setColor(true); do Screen.drawLine(226, 100, 228, 98);
+        }
+        if (currentLevel = 2) { 
+            do Output.moveCursor(9, 23); do Output.printString("Ardilla  vs  Gato"); 
+        }
+        if (currentLevel = 3) { 
+            do Output.moveCursor(9, 21); do Output.printString("Pajaro  vs  Serpientes"); 
+            do Screen.setColor(true); do Screen.drawLine(178, 100, 180, 98);
+        }
+
+        do UI.drawVersusIcons(currentLevel, 125);
+
+        if (currentLevel = 1) { 
+            do Output.moveCursor(15, 23); do Output.printString("Dificultad: Facil"); 
+            do Screen.setColor(true); do Screen.drawLine(290, 166, 292, 164);
+        }
+        if (currentLevel = 2) { 
+            do Output.moveCursor(15, 23); do Output.printString("Dificultad: Normal"); 
+        }
+        if (currentLevel = 3) { 
+            do Output.moveCursor(15, 22); do Output.printString("Dificultad: EXTREMA!"); 
+        }
+
+        do Output.moveCursor(17, 21);
+        do Output.printString("Llega a la salida [X]");
+        do Output.moveCursor(18, 23);
+        do Output.printString("sin ser capturado!");
+
+        do Output.moveCursor(20, 22);
+        do Output.printString("[ PRESIONA ESPACIO ]");
+        do Output.moveCursor(21, 26);
+        do Output.printString("para comenzar");
+
+        while (~(Keyboard.keyPressed() = 32)) {
+            do Random.addSeed(1);
+        }
+        while (Keyboard.keyPressed() = 32) { }
+        return;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       PANTALLA DE NIVEL COMPLETADO (SIN ANIMALES Y CENTRADA)
+       ════════════════════════════════════════════════════════════ */
+    function int drawLevelWin(int currentLevel) {
+        var int key;
+        do Screen.clearScreen();
+        do UI.drawFrame();
+
+        // TITULO GRANDE: ¡NIVEL SUPERADO!
+        do UI.drawNivelSuperadoTitle();
+
+        // Textos pequeños centrados matemáticamente
+        do Output.moveCursor(10, 22);
+        do Output.printString("Escapaste con exito!");
+        do Screen.setColor(true); do Screen.drawLine(290, 111, 292, 109); // Tilde en éxito
+
+        do Output.moveCursor(12, 24);
+        do Output.printString("Nivel superado: ");
+        do Output.printInt(currentLevel);
+
+        do Output.moveCursor(14, 23);
+        do Output.printString("Siguiente nivel: ");
+        do Output.printInt(currentLevel + 1);
+
+        do Output.moveCursor(17, 21);
+        do Output.printString("Presiona ESPACIO para");
+        do Output.moveCursor(18, 21);
+        do Output.printString("continuar al siguiente");
+
+        do Output.moveCursor(20, 25);
+        do Output.printString("[Q] para salir");
+
+        let key = 0;
+        while (~((key = 32) | (key = 81) | (key = 113))) {
+            let key = Keyboard.keyPressed();
+            do Random.addSeed(1);
+        }
+        while (~(Keyboard.keyPressed() = 0)) { }
+        return key;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       PANTALLA DE GAME OVER (OPCIONES JUNTAS Y CENTRADAS)
+       ════════════════════════════════════════════════════════════ */
+    function int drawGameOver(int currentLevel, int attempts) {
+        var int key;
+        do Screen.clearScreen();
+        do UI.drawFrame();
+
+        // TITULO GRANDE: GAME OVER
+        do UI.drawGameOverTitle();
+
+        // Texto resaltado usando mayúsculas y espacios (simula tamaño más grande)
+        do Output.moveCursor(10, 17);
+        do Output.printString("! T E   C A P T U R A R O N !");
+
+        do Output.moveCursor(12, 22);
+        do Output.printString("Caiste en el nivel ");
+        do Output.printInt(currentLevel);
+        do Screen.setColor(true); do Screen.drawLine(194, 133, 196, 131); // Tilde en Caíste
+
+        if (attempts = 1) {
+            do Output.moveCursor(15, 19);
+            do Output.printString("Te queda 1 intento mas.");
+            do Output.moveCursor(17, 19);
+            do Output.printString("[R] Reintentar este nivel");
+            do Output.moveCursor(18, 19);
+            do Output.printString("[Q] Salir del juego");
+        } else {
+            do Output.moveCursor(15, 19);
+            do Output.printString("Has acabado tus intentos.");
+            do Output.moveCursor(18, 19);
+            do Output.printString("[Q] Salir del juego");
+        }
+
+        let key = 0;
+        if (attempts = 1) {
+            while (~((key = 82) | (key = 114) | (key = 81) | (key = 113))) {
+                let key = Keyboard.keyPressed();
+                do Random.addSeed(1);
+            }
+        } else {
+            while (~((key = 81) | (key = 113))) {
+                let key = Keyboard.keyPressed();
+                do Random.addSeed(1);
+            }
+        }
+        while (~(Keyboard.keyPressed() = 0)) { }
+        return key;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       PANTALLA DE VICTORIA TOTAL (CENTRADA)
+       ════════════════════════════════════════════════════════════ */
+    function int drawVictory() {
+        var int key;
+        do Screen.clearScreen();
+        do UI.drawFrame();
+
+        // TITULO: ¡VICTORIA! 
+        do UI.drawVictoryTitle();
+
+        do Output.moveCursor(9, 21);
+        do Output.printString("Completaste todos los");
+        do Output.moveCursor(10, 27);
+        do Output.printString("3 NIVELES!");
+
+        do Output.moveCursor(12, 23);
+        do Output.printString("Eres el maestro de");
+        do Output.moveCursor(13, 23);
+        do Output.printString("MAZE INTELLIGENCE!");
+
+        do Output.moveCursor(15, 24);
+        do Output.printString("Sobreviviste a:");
+        do Output.moveCursor(16, 25);
+        do Output.printString("Gatos y");
+        do Output.moveCursor(17, 25);
+        do Output.printString("2 Serpientes!");
+
+        do Output.moveCursor(20, 21);
+        do Output.printString("                   ");
+        do Output.moveCursor(21, 26);
+        do Output.printString("[Q] Salir");
+
+        let key = 0;
+        while (~((key = 81) | (key = 113))) {
+            let key = Keyboard.keyPressed();
+            do Random.addSeed(1);
+        }
+        while (~(Keyboard.keyPressed() = 0)) { }
+        return key;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       PANTALLA DE PAUSA (AJUSTADA Y CENTRADA)
+       ════════════════════════════════════════════════════════════ */
+    function void drawPause(int currentLevel) {
+        do Screen.clearScreen();
+        do UI.drawFrame();
+
+        // 1. Dibujar "PAUSA" en grande (Pixel Art) - Bajado un poco más
+        do UI.drawPauseTitle();
+
+        // 2. Textos centrados (Nivel más abajo)
+        do Output.moveCursor(12, 24); 
+        do Output.printString("Nivel actual: ");
+        do Output.printInt(currentLevel);
+
+        // 3. Controles eliminados, y opciones de reanudar subidas
+        do Output.moveCursor(16, 23);
+        do Output.printString("Presiona [P] para");
+        do Output.moveCursor(17, 23);
+        do Output.printString("REANUDAR el juego");
+
+        while (~(Keyboard.keyPressed() = 0)) { }
+        while (~((Keyboard.keyPressed() = 80) | (Keyboard.keyPressed() = 112))) {
+            do Random.addSeed(1);
+        }
+        while (~(Keyboard.keyPressed() = 0)) { }
+        return;
+    }
+
+    /* ── Helpers Privados de Dibujo ────────────────────────────── */
+    
+    function void drawFrame() {
+        do Screen.setColor(true);
+        do Screen.drawRectangle(0, 0, 511, 255);
+        do Screen.setColor(false);
+        do Screen.drawRectangle(2, 2, 509, 253);
+        do Screen.setColor(true);
+        do Screen.drawRectangle(4, 4, 507, 251);
+        do Screen.setColor(false);
+        do Screen.drawRectangle(6, 6, 505, 249);
+        return;
+    }
+
+    function void drawTitle() {
+        var int x; 
+        do Screen.setColor(true);
+        // M
+        let x = 200;
+        do Screen.drawRectangle(x, 30, x+5, 50);
+        do Screen.drawRectangle(x+15, 30, x+20, 50);
+        do Screen.drawRectangle(x+5, 30, x+10, 35);
+        do Screen.drawRectangle(x+10, 35, x+15, 40);
+        // A
+        let x = 230;
+        do Screen.drawRectangle(x, 30, x+20, 35);
+        do Screen.drawRectangle(x, 30, x+5, 50);
+        do Screen.drawRectangle(x+15, 30, x+20, 50);
+        do Screen.drawRectangle(x, 40, x+20, 45);
+        // Z
+        let x = 260;
+        do Screen.drawRectangle(x, 30, x+20, 35);
+        do Screen.drawRectangle(x, 45, x+20, 50);
+        do Screen.drawLine(x+20, 30, x, 50);
+        do Screen.drawLine(x+20, 31, x+1, 50);
+        do Screen.drawLine(x+20, 32, x+2, 50);
+        do Screen.drawLine(x+19, 30, x, 49);
+        do Screen.drawLine(x+18, 30, x, 48);
+        // E
+        let x = 290;
+        do Screen.drawRectangle(x, 30, x+5, 50);
+        do Screen.drawRectangle(x, 30, x+20, 35);
+        do Screen.drawRectangle(x, 38, x+15, 42);
+        do Screen.drawRectangle(x, 45, x+20, 50);
+        return;
+    }
+
+    function void drawNivelesTitle() {
+        var int x, y;
+        do Screen.setColor(true);
+        let y = 15;
+        // N
+        let x = 190;
+        do Screen.drawRectangle(x, y, x+3, y+20);
+        do Screen.drawRectangle(x+9, y, x+12, y+20);
+        do Screen.drawLine(x+2, y, x+10, y+20);
+        do Screen.drawLine(x+3, y, x+11, y+20);
+        do Screen.drawLine(x+1, y, x+9, y+20);
+        // I
+        let x = 210;
+        do Screen.drawRectangle(x+4, y, x+7, y+20);
+        do Screen.drawRectangle(x+1, y, x+10, y+3);
+        do Screen.drawRectangle(x+1, y+17, x+10, y+20);
+        // V
+        let x = 230;
+        do Screen.drawRectangle(x, y, x+3, y+15);
+        do Screen.drawRectangle(x+9, y, x+12, y+15);
+        do Screen.drawRectangle(x+3, y+15, x+9, y+20);
+        // E
+        let x = 250;
+        do Screen.drawRectangle(x, y, x+3, y+20);
+        do Screen.drawRectangle(x, y, x+12, y+3);
+        do Screen.drawRectangle(x, y+9, x+10, y+12);
+        do Screen.drawRectangle(x, y+17, x+12, y+20);
+        // L
+        let x = 270;
+        do Screen.drawRectangle(x, y, x+3, y+20);
+        do Screen.drawRectangle(x, y+17, x+12, y+20);
+        // E
+        let x = 290;
+        do Screen.drawRectangle(x, y, x+3, y+20);
+        do Screen.drawRectangle(x, y, x+12, y+3);
+        do Screen.drawRectangle(x, y+9, x+10, y+12);
+        do Screen.drawRectangle(x, y+17, x+12, y+20);
+        // S
+        let x = 310;
+        do Screen.drawRectangle(x, y, x+12, y+3);
+        do Screen.drawRectangle(x, y, x+3, y+10);
+        do Screen.drawRectangle(x, y+9, x+12, y+12);
+        do Screen.drawRectangle(x+9, y+9, x+12, y+20);
+        do Screen.drawRectangle(x, y+17, x+12, y+20);
+        return;
+    }

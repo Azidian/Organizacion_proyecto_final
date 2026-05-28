@@ -3,8 +3,8 @@
  * Representa al jugador controlado por teclado (W/A/S/D o flechas).
  *
  * SPRITES segun nivel (el jugador ES la presa):
- * Nivel 1 - Raton:  cara redonda con orejas grandes y bigotes 
- * Nivel 2 - Ardilla: cara con mejillas y cola imaginada
+ * Nivel 1 - Raton:  cara redonda con orejas grandes y bigotes finos
+ * Nivel 2 - Ardilla: cara con mejillas abultadas y cola imaginada
  * Nivel 3 - Pajaro:  cara con pico triangular y copete
  *
  * Keycodes Jack:
@@ -34,7 +34,7 @@ class Player {
         let cellSize  = maze.getCellSize();
         let level     = lvl;
         let moveTimer = 0;
-        let moveDelay = interval; 
+        let moveDelay = interval; // COMENTARIO: Ajustar velocidad compartida en Game.jack (interval)
         let lastDir   = 0;
         let dirRow    = 0;
         let dirCol    = 0;
@@ -111,7 +111,7 @@ class Player {
 
     /* ─────────────────────────────────────────────────────────────
        SPRITE NIVEL 1: RATON
-       Cara blanca redondeada, orejas circulares grandes, bigotes 
+       Cara blanca redondeada, orejas circulares grandes, bigotes finos
        ───────────────────────────────────────────────────────────── */
     method void drawRaton() {
         var int px, py, cx, cy;
@@ -167,8 +167,8 @@ class Player {
 
     /* ─────────────────────────────────────────────────────────────
        SPRITE NIVEL 2: ARDILLA
-       Cola muy esponjosa, mejillas gorditas, 
-       ojos negros con brillo, y dientes tiernos.
+       Estilo Ultra Kawaii: Cola muy esponjosa, mejillas gorditas, 
+       ojazos negros con brillo, y dientecitos tiernos.
        ───────────────────────────────────────────────────────────── */
     method void drawArdilla() {
         var int px, py, cx;
@@ -176,7 +176,7 @@ class Player {
         let py = row * cellSize;
         let cx = cellSize / 2;
 
-        // --- Cola esponjosa (detrás) ---
+        // --- Cola super esponjosa (detrás) ---
         do Screen.setColor(true);
         do Screen.drawRectangle(px+10, py+1, px+15, py+12);
         // Suavizar bordes para hacerla redonda
@@ -188,13 +188,13 @@ class Player {
         do Screen.drawLine(px+12, py+6, px+15, py+6);
         do Screen.drawLine(px+11, py+9, px+14, py+9);
 
-        // --- Cara redonda (blanca) ---
+        // --- Cara redondita (blanca) ---
         do Screen.setColor(true); // Borde
         do Screen.drawRectangle(px+2, py+5, px+13, py+14);
         do Screen.setColor(false); // Relleno
         do Screen.drawRectangle(px+3, py+6, px+12, py+13);
 
-        // --- Mejillas muy gordas ---
+        // --- Mejillas muy regordetas ---
         do Screen.setColor(true);
         do Screen.drawRectangle(px+1, py+8, px+3, py+12); // Borde mejilla izq
         do Screen.drawRectangle(px+12, py+8, px+14, py+12); // Borde mejilla der
@@ -202,7 +202,7 @@ class Player {
         do Screen.drawRectangle(px+2, py+9, px+3, py+11); // Relleno mejilla izq
         do Screen.drawRectangle(px+12, py+9, px+13, py+11); // Relleno mejilla der
 
-        // --- Orejas tiernas ---
+        // --- Orejitas tiernas ---
         do Screen.setColor(true);
         do Screen.drawRectangle(px+3, py+3, px+5, py+5);
         do Screen.drawRectangle(px+10, py+3, px+12, py+5);
@@ -210,7 +210,7 @@ class Player {
         do Screen.drawRectangle(px+4, py+4, px+4, py+4); // interior blanco
         do Screen.drawRectangle(px+11, py+4, px+11, py+4);
 
-        // --- Ojos grandes tiernos ---
+        // --- Ojazos gigantes tiernos ---
         do Screen.setColor(true);
         do Screen.drawRectangle(px+4, py+7, px+6, py+9); // 3x3 ojo
         do Screen.drawRectangle(px+9, py+7, px+11, py+9); 
@@ -219,11 +219,11 @@ class Player {
         do Screen.drawRectangle(px+5, py+7, px+5, py+7);
         do Screen.drawRectangle(px+10, py+7, px+10, py+7);
 
-        // --- Nariz ---
+        // --- Naricita ---
         do Screen.setColor(true);
         do Screen.drawLine(px+7, py+10, px+8, py+10);
 
-        // --- Dientes (buck teeth) ---
+        // --- Dientecitos (buck teeth) ---
         do Screen.setColor(true);
         do Screen.drawRectangle(px+6, py+11, px+9, py+13); // borde exterior
         do Screen.setColor(false);

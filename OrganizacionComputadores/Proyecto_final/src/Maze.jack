@@ -1,96 +1,109 @@
 /**
  * Maze.jack
- * Representa el laberinto como una matriz 2D.
- * * Estructura principal de la clase encargada del entorno,
- * renderizado gráfico del mapa y validación de caminos.
+ * Gestiona el laberinto segun el nivel actual.
  *
- * Celdas: 
- * 0 = camino libre
- * 1 = muro
+ * Dimensiones: 11 filas x 17 columnas, CELL_SIZE = 16 px.
+ * Grid total: 272 x 176 px (cabe en pantalla Hack 512x256).
  *
- * Dimensiones: ROWS x COLS celdas de CELL_SIZE píxeles cada una.
+ * 3 laberintos distintos con complejidad creciente:
+ * Nivel 1: laberinto simple (Raton y Gato)
+ * Nivel 2: caminos mas largos (Ardilla y Gato)
+ * Nivel 3: maximo de muros y pasillos estrechos (Serpiente y Pajaro)
  */
-
 class Maze {
 
-    /* ── Constantes de layout ───────────────────────────────────── */
-    static int ROWS;        // filas del laberinto
-    static int COLS;        // columnas del laberinto
-    static int CELL_SIZE;   // píxeles por celda
+    static int ROWS;
+    static int COLS;
+    static int CELL_SIZE;
 
-    /* ── Datos del mapa ─────────────────────────────────────────── */
-    field Array map;        // Array lineal [ROWS * COLS] de int
+    static Array sharedMap;
+    field int   level;
 
-    /* ── Constructor ────────────────────────────────────────────── */
-    constructor Maze new() {
+    /* Constructor */
+    /**
+     * Prepara el laberinto para el nivel indicado.
+     */
+    constructor Maze new(int lvl) {
         var int i;
         let ROWS      = 11;
         let COLS      = 17;
-        let CELL_SIZE = 16;   // 17*16=272 px ancho, 11*16=176 px alto → cabe en 512x256
+        let CELL_SIZE = 16;
+        let level     = lvl;
 
-        let map = Array.new(ROWS * COLS);
+        // Si es la primera vez que jugamos, creamos la memoria para el mapa
+        // Se hace solo una vez para ahorrar memoria RAM
+        if (sharedMap = 0) {
+            let sharedMap = Array.new(ROWS * COLS);
+        }
 
-        // Inicializar todo como muros (1)
+        // Primero rellenamos todo el escenario de puros muros (1)
         let i = 0;
         while (i < (ROWS * COLS)) {
-            let map[i] = 1;
+            let sharedMap[i] = 1;
             let i = i + 1;
         }
 
-        do Maze.buildLayout(map, ROWS, COLS);
+        // Cargar layout segun nivel
+        if (level = 1) { do Maze.buildLevel1(sharedMap, COLS); }
+        if (level = 2) { do Maze.buildLevel2(sharedMap, COLS); }
+        if (level = 3) { do Maze.buildLevel3(sharedMap, COLS); }
+
         return this;
     }
 
-    /* ── Construcción del mapa ──────────────────────────────────── */
-    /**
-     * Define el laberinto hard-coded.
-     * 0 = camino libre, 1 = muro.
-     * Se cargan fila por fila usando setCell().
-     *
-     * Distribución (11 filas × 17 columnas):
-     *
-     *  1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
-     *  1 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 1
-     *  1 0 1 0 1 0 1 1 1 1 1 0 1 0 1 0 1
-     *  1 0 1 0 0 0 0 0 0 0 1 0 0 0 1 0 1
-     *  1 0 1 1 1 1 1 0 1 0 1 1 1 0 1 0 1
-     *  1 0 0 0 0 0 1 0 1 0 0 0 0 0 1 0 1
-     *  1 1 1 0 1 0 1 0 1 1 1 1 1 0 1 0 1
-     *  1 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 1
-     *  1 0 1 1 1 0 1 1 1 0 1 0 1 0 1 1 1
-     *  1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1
-     *  1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
-     */
-    function void buildLayout(Array m, int rows, int cols) {
-        // Fila 0 - todo muros
-        do Maze.setRow(m, cols, 0,  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1);
-        // Fila 1
-        do Maze.setRow(m, cols, 1,  1,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,1);
-        // Fila 2
-        do Maze.setRow(m, cols, 2,  1,0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1);
-        // Fila 3
-        do Maze.setRow(m, cols, 3,  1,0,1,0,0,0,0,0,0,0,1,0,0,0,1,0,1);
-        // Fila 4
-        do Maze.setRow(m, cols, 4,  1,0,1,1,1,1,1,0,1,0,1,1,1,0,1,0,1);
-        // Fila 5
-        do Maze.setRow(m, cols, 5,  1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0,1);
-        // Fila 6
-        do Maze.setRow(m, cols, 6,  1,1,1,0,1,0,1,0,1,1,1,1,1,0,1,0,1);
-        // Fila 7
-        do Maze.setRow(m, cols, 7,  1,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,1);
-        // Fila 8
-        do Maze.setRow(m, cols, 8,  1,0,1,1,1,0,1,1,1,0,1,0,1,0,1,1,1);
-        // Fila 9
-        do Maze.setRow(m, cols, 9,  1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1);
-        // Fila 10 - todo muros
-        do Maze.setRow(m, cols, 10, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1);
+    /* NIVEL 1: Gato y Raton (simple)
+       Pasillos amplios, pocas paredes internas */
+    function void buildLevel1(Array m, int cols) {
+        do Maze.setRow(m,cols, 0, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1);
+        do Maze.setRow(m,cols, 1, 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1);
+        do Maze.setRow(m,cols, 2, 1,0,1,1,0,1,1,1,0,1,1,1,0,1,1,0,1);
+        do Maze.setRow(m,cols, 3, 1,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1);
+        do Maze.setRow(m,cols, 4, 1,0,1,0,1,1,0,1,1,1,0,1,1,0,1,0,1);
+        do Maze.setRow(m,cols, 5, 1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,1);
+        do Maze.setRow(m,cols, 6, 1,1,1,0,1,1,0,1,1,1,0,1,1,0,1,1,1);
+        do Maze.setRow(m,cols, 7, 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1);
+        do Maze.setRow(m,cols, 8, 1,0,1,1,0,1,0,1,1,1,0,1,0,1,1,0,1);
+        do Maze.setRow(m,cols, 9, 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1);
+        do Maze.setRow(m,cols,10, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1);
         return;
     }
 
-    /**
-     * Carga una fila completa en el array lineal.
-     * Jack no admite varargs, por eso se pasan las 17 celdas explícitamente.
-     */
+    /* NIVEL 2: Ardilla y Gato (medio)
+       Algunos pasillos mas estrechos */
+
+    function void buildLevel2(Array m, int cols) {
+        do Maze.setRow(m,cols, 0, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1);
+        do Maze.setRow(m,cols, 1, 1,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,1);
+        do Maze.setRow(m,cols, 2, 1,0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1);
+        do Maze.setRow(m,cols, 3, 1,0,1,0,0,0,0,0,0,0,1,0,0,0,1,0,1);
+        do Maze.setRow(m,cols, 4, 1,0,1,1,1,1,1,0,1,0,1,1,1,0,1,0,1);
+        do Maze.setRow(m,cols, 5, 1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0,1);
+        do Maze.setRow(m,cols, 6, 1,1,1,0,1,0,1,0,1,1,1,1,1,0,1,0,1);
+        do Maze.setRow(m,cols, 7, 1,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,1);
+        do Maze.setRow(m,cols, 8, 1,0,1,1,1,0,1,1,1,0,1,0,1,0,1,1,1);
+        do Maze.setRow(m,cols, 9, 1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1);
+        do Maze.setRow(m,cols,10, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1);
+        return;
+    }
+
+    /* NIVEL 3: Serpiente y Pajaro (maximo)
+       Pasillos de 1 celda, laberinto muy denso */
+    function void buildLevel3(Array m, int cols) {
+        do Maze.setRow(m,cols, 0, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1);
+        do Maze.setRow(m,cols, 1, 1,0,0,0,0,0,1,0,1,0,0,0,1,0,0,0,1);
+        do Maze.setRow(m,cols, 2, 1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1);
+        do Maze.setRow(m,cols, 3, 1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1);
+        do Maze.setRow(m,cols, 4, 1,0,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1);
+        do Maze.setRow(m,cols, 5, 1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1);
+        do Maze.setRow(m,cols, 6, 1,0,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1);
+        do Maze.setRow(m,cols, 7, 1,0,0,0,1,0,1,0,0,0,0,0,1,0,0,0,1);
+        do Maze.setRow(m,cols, 8, 1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,1,1);
+        do Maze.setRow(m,cols, 9, 1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1);
+        do Maze.setRow(m,cols,10, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1);
+        return;
+    }
+
+    /* Carga de fila */
     function void setRow(Array m, int cols, int row,
                          int c0,  int c1,  int c2,  int c3,
                          int c4,  int c5,  int c6,  int c7,
@@ -119,30 +132,34 @@ class Maze {
         return;
     }
 
-    /* ── Acceso al mapa ─────────────────────────────────────────── */
-
-    /** Retorna el valor de la celda (row, col). */
+    /* Acceso al mapa */
     method int getCell(int row, int col) {
-        return map[(row * COLS) + col];
+        return sharedMap[(row * COLS) + col];
     }
 
-    /** Retorna true si (row, col) es un camino libre. */
+    /**
+     * Nos dice si se puede caminar por una celda especifica.
+     * Retorna "falso" si hay un muro o si la posicion esta fuera de la pantalla.
+     * Retorna "verdadero" si hay un pasillo (0).
+     */
     method boolean isPassable(int row, int col) {
-        if (row < 0)    { return false; }
-        if (col < 0)    { return false; }
-        if (row > (ROWS - 1)) { return false; }
-        if (col > (COLS - 1)) { return false; }
-        return (map[(row * COLS) + col] = 0);
+        if (row < 0)           { return false; }
+        if (col < 0)           { return false; }
+        if (row > (ROWS - 1))  { return false; }
+        if (col > (COLS - 1))  { return false; }
+        return (sharedMap[(row * COLS) + col] = 0);
     }
 
-    /* ── Getters de constantes ──────────────────────────────────── */
     method int getRows()     { return ROWS; }
     method int getCols()     { return COLS; }
     method int getCellSize() { return CELL_SIZE; }
+    method int getLevel()    { return level; }
 
-    /* ── Renderizado ────────────────────────────────────────────── */
-
-    /** Dibuja el laberinto completo en pantalla. */
+    /* Renderizado completo */
+    /**
+     * Dibuja todo el laberinto en la pantalla (bloque por bloque).
+     * Los muros (1) se pintan de negro, los pasillos (0) de blanco.
+     */
     method void draw() {
         var int r, c, px, py;
         let r = 0;
@@ -151,18 +168,12 @@ class Maze {
             while (c < COLS) {
                 let px = c * CELL_SIZE;
                 let py = r * CELL_SIZE;
-                if (map[(r * COLS) + c] = 1) {
-                    // Muro: rectángulo negro relleno
+                if (sharedMap[(r * COLS) + c] = 1) {
                     do Screen.setColor(true);
-                    do Screen.drawRectangle(px, py,
-                                            px + CELL_SIZE - 1,
-                                            py + CELL_SIZE - 1);
+                    do Screen.drawRectangle(px, py, px+CELL_SIZE, py+CELL_SIZE);
                 } else {
-                    // Camino: rectángulo blanco
                     do Screen.setColor(false);
-                    do Screen.drawRectangle(px, py,
-                                            px + CELL_SIZE - 1,
-                                            py + CELL_SIZE - 1);
+                    do Screen.drawRectangle(px, py, px+CELL_SIZE, py+CELL_SIZE);
                 }
                 let c = c + 1;
             }
@@ -172,29 +183,32 @@ class Maze {
     }
 
     /**
-     * Redibuja SOLO la celda (row, col) como camino libre (limpia sprites viejos).
-     * Úsalo para borrar la posición anterior de Player / Enemy.
+     * Vuelve a pintar UNA SOLA casilla especifica del laberinto.
+     * Es super util para "borrar" al jugador o enemigo de donde estaba antes
+     * de moverse, sin tener que redibujar todo el escenario completo.
      */
     method void drawCell(int row, int col) {
         var int px, py;
         let px = col * CELL_SIZE;
         let py = row * CELL_SIZE;
-        if (map[(row * COLS) + col] = 1) {
+        if (sharedMap[(row * COLS) + col] = 1) {
             do Screen.setColor(true);
+            do Screen.drawRectangle(px, py, px+CELL_SIZE, py+CELL_SIZE);
         } else {
             do Screen.setColor(false);
+            do Screen.drawRectangle(px, py, px+CELL_SIZE-1, py+CELL_SIZE-1);
         }
-        do Screen.drawRectangle(px, py,
-                                px + CELL_SIZE - 1,
-                                py + CELL_SIZE - 1);
         return;
     }
 
-    /* ── Destructor ─────────────────────────────────────────────── */
+    /* Destructor */
+    /**
+     * Limpia la memoria cuando cerramos el laberinto.
+     * Nota: El mapa compartido (sharedMap) no se borra, porque lo reciclamos.
+     */
     method void dispose() {
-        do map.dispose();
+        // do Memory.deAlloc(sharedMap); // NO DEALLOCATE
         do Memory.deAlloc(this);
         return;
     }
-
 }

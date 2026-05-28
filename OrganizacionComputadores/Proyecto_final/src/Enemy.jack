@@ -1,221 +1,372 @@
 /**
  * Enemy.jack
- * Agente enemigo con IA basada en BFS (Breadth-First Search).
+ * Agente enemigo con BFS real y sprite por nivel/tema.
  *
- * El enemigo SIEMPRE calcula el camino más corto al jugador,
- * rodeando muros correctamente.
+ * SPRITES:
+ * Nivel 1 y 2 - Gato:    cara NEGRA (contrasta con laberinto blanco),
+ *                         orejas puntiagudas, detalles blancos
+ * Nivel 3     - Serpiente: cara elongada negra, ojos reptil, lengua bifida
  *
- * Algoritmo por tick de movimiento:
- *   1. BFS desde la celda del enemigo hasta la del jugador.
- *   2. Se reconstruye el camino hacia atrás (parent[]) para
- *      encontrar el PRIMER paso desde el enemigo.
- *   3. El enemigo da ese primer paso.
- *   4. Si no hay camino libre, el enemigo se queda quieto.
- *
- * Los arrays BFS (queue, parent) se asignan una sola vez en el
- * constructor y se reutilizan para evitar fragmentación del heap.
+ * IA: BFS completo. Los arrays BFS son ESTATICOS (compartidos, asignados
+ * una sola vez durante toda la vida del programa) para evitar ERR6
+ * por fragmentacion del heap en reinicios.
  */
 class Enemy {
 
-    static int ROWS;   // filas del laberinto  (= 11)
-    static int COLS;   // columnas del laberinto (= 17)
-    static int CELLS;  // ROWS * COLS            (= 187)
+    // Arrays BFS estaticos: compartidos entre todos los enemigos
+    // (Jack es single-threaded, por lo tanto es seguro compartirlos)
+    static Array sharedDistField;  // distancia BFS desde objetivo (187 celdas)
+    static Array sharedBfsQueue;   // cola BFS (max 187 nodos)
+    static boolean bfsReady;       // true una vez que los arrays fueron asignados
 
-    field int row, col;       // posición actual en el grid
-    field Maze maze;          // referencia al laberinto
-    field int cellSize;       // píxeles por celda (caché)
-    field int moveTimer;      // acumulador de ticks
-    field int moveInterval;   // ticks entre movimientos
+    field int   row, col;
+    field Maze  maze;
+    field int   cellSize;
+    field int   moveTimer;
+    field int   moveInterval;
+    field int   enemyType;    // 1: Directo
+    field int   level;
+    field int   lastRow;
+    field int   lastCol;
 
-    field Array queue;   // cola BFS  — índices de celda (int)
-    field Array parent;  // parent[i] = índice del padre en el árbol BFS
-                         //             -1 = celda no visitada
-
-    /* ── Constructor ────────────────────────────────────────────── */
-    constructor Enemy new(Maze theMaze, int startRow, int startCol) {
-        let ROWS  = 11;
-        let COLS  = 17;
-        let CELLS = 187;   // ROWS * COLS
-
+    /*  Constructor  */
+    /**
+     * Prepara a un nuevo enemigo en el mapa.
+     * @param theMaze      referencia al laberinto
+     * @param startRow     fila inicial
+     * @param startCol     columna inicial
+     * @param interval     ticks entre movimientos (controla que tan rapido es)
+     * @param type         tipo de comportamiento (1: persecucion directa, 2: adivinar futuro)
+     * @param lvl          nivel actual (1-3) para elegir como se dibuja
+     */
+    constructor Enemy new(Maze theMaze, int startRow, int startCol,
+                          int interval, int type, int lvl) {
         let maze         = theMaze;
         let row          = startRow;
         let col          = startCol;
         let cellSize     = maze.getCellSize();
         let moveTimer    = 0;
-        let moveInterval = 30; // ticks entre movimientos
-
-        // Reservar arrays reutilizables para BFS
-        let queue  = Array.new(187);
-        let parent = Array.new(187);
+        let moveInterval = interval;
+        let enemyType    = type;
+        let level        = lvl;
+        let lastRow      = startRow;
+        let lastCol      = startCol;
+        // Asignar arrays BFS estaticos solo la primera vez
+        if (~bfsReady) {
+            let sharedDistField = Array.new(187);
+            let sharedBfsQueue  = Array.new(187);
+            let bfsReady        = true;
+        }
         return this;
     }
 
-    /* ── Getters ────────────────────────────────────────────────── */
+    /* Getters */
     method int getRow() { return row; }
     method int getCol() { return col; }
 
-    /* ── IA: BFS hacia el jugador ───────────────────────────────── */
-
+    /* IA DE PERSECUCION (sin asignacion dinamica) */
     /**
-     * Calcula el camino más corto (BFS) hacia el jugador y ejecuta
-     * el primer paso. Respeta todos los muros del laberinto.
-     *
-     * @param playerRow  fila actual del jugador
-     * @param playerCol  columna actual del jugador
+     * Es el "cerebro" del enemigo. Decide hacia donde moverse para atrapar al jugador.
+     * Funciona creando un mapa mental de distancias desde el jugador hacia afuera
+     * como si fuera una ola de agua, y el enemigo siempre camina hacia donde el agua
+     * es menos profunda (menor distancia).
      */
-    method void update(int playerRow, int playerCol) {
-        var int startIdx, goalIdx;
+    method void update(int playerRow, int playerCol, int playerDirRow, int playerDirCol) {
+        var int targetRow, targetCol;
         var int head, tail;
-        var int curr, currRow, currCol;
-        var int nextRow, nextCol, nextIdx;
-        var int i, stepIdx, stepRow, stepCol;
-        var boolean found;
+        var int curr, r, c, d, nidx;
+        var int nr, nc;
+        var int i;
+        var int bestRow, bestCol, bestDist, val;
 
-        // Movimiento del enemigo
+        // Control de velocidad: Solo se mueve si ya pasaron los ticks suficientes
         let moveTimer = moveTimer + 1;
         if (moveTimer < moveInterval) { return; }
         let moveTimer = 0;
 
-        let startIdx = (row * COLS) + col;
-        let goalIdx  = (playerRow * COLS) + playerCol;
+        // 1. Determinar hacia donde queremos ir (el objetivo)
+        // Si el tipo es 2, el enemigo intenta anticiparse e ir hacia donde el jugador se dirige
+        if (enemyType = 2) {
+            let targetRow = playerRow + (playerDirRow * 2);
+            let targetCol = playerCol + (playerDirCol * 2);
+            if (targetRow < 0) { let targetRow = 0; }
+            if (targetRow > (maze.getRows() - 1)) { let targetRow = maze.getRows() - 1; }
+            if (targetCol < 0) { let targetCol = 0; }
+            if (targetCol > (maze.getCols() - 1)) { let targetCol = maze.getCols() - 1; }
+            if (~maze.isPassable(targetRow, targetCol)) {
+                let targetRow = playerRow;
+                let targetCol = playerCol;
+            }
+        } else {
+            let targetRow = playerRow;
+            let targetCol = playerCol;
+        }
 
-        // Si ya está en la misma celda que el jugador, nada que hacer
-        if (startIdx = goalIdx) { return; }
-
-        // Inicializar parent a -1 (ninguna celda visitada)
+        // 2. Limpiar el mapa mental de distancias
+        // Ponemos todo el mapa en 9999 (que significa "inalcanzable" o "muy lejos")
         let i = 0;
-        while (i < CELLS) {
-            let parent[i] = -1;
+        while (i < 187) {
+            let sharedDistField[i] = 9999;
             let i = i + 1;
         }
 
-        // BFS
-        // El nodo de inicio se marca apuntando a sí mismo
-        let parent[startIdx] = startIdx;
-        let head  = 0;
-        let tail  = 0;
-        let found = false;
-        let queue[tail] = startIdx;
+        // 3. Expandir la "ola" desde el jugador hacia todo el laberinto
+        // Empezamos marcando la distancia cero en la celda donde esta el objetivo
+        let head = 0;
+        let tail = 0;
+        let sharedDistField[(targetRow * 17) + targetCol] = 0;
+        let sharedBfsQueue[tail] = (targetRow * 17) + targetCol;
         let tail = tail + 1;
 
-        while ((head < tail) & (~found)) {
-            let curr    = queue[head];
-            let head    = head + 1;
+        // Mientras la ola siga expandiendose, revisamos las celdas vecinas (arriba, abajo, izq, der)
+        // y les ponemos la distancia actual + 1 paso
+        while (head < tail) {
+            let curr = sharedBfsQueue[head];
+            let head = head + 1;
+            let r = curr / 17;
+            let c = curr - (r * 17);
+            let d = sharedDistField[curr];
 
-            // Decodificar índice → (fila, col)
-            let currRow = curr / COLS;
-            let currCol = curr - (currRow * COLS);
-
-            if (curr = goalIdx) {
-                let found = true;   // objetivo alcanzado → salir del BFS
-            } else {
-
-                // Vecino ARRIBA
-                if (currRow > 0) {
-                    let nextRow = currRow - 1;
-                    let nextCol = currCol;
-                    let nextIdx = (nextRow * COLS) + nextCol;
-                    if ((parent[nextIdx] = -1) & maze.isPassable(nextRow, nextCol)) {
-                        let parent[nextIdx] = curr;
-                        let queue[tail]     = nextIdx;
-                        let tail = tail + 1;
-                    }
+            let nr = r - 1; let nc = c;
+            if (maze.isPassable(nr, nc)) {
+                let nidx = (nr * 17) + nc;
+                if (sharedDistField[nidx] = 9999) {
+                    let sharedDistField[nidx] = d + 1;
+                    let sharedBfsQueue[tail] = nidx;
+                    let tail = tail + 1;
                 }
-
-                // Vecino ABAJO
-                if (currRow < (ROWS - 1)) {
-                    let nextRow = currRow + 1;
-                    let nextCol = currCol;
-                    let nextIdx = (nextRow * COLS) + nextCol;
-                    if ((parent[nextIdx] = -1) & maze.isPassable(nextRow, nextCol)) {
-                        let parent[nextIdx] = curr;
-                        let queue[tail]     = nextIdx;
-                        let tail = tail + 1;
-                    }
+            }
+            let nr = r + 1; let nc = c;
+            if (maze.isPassable(nr, nc)) {
+                let nidx = (nr * 17) + nc;
+                if (sharedDistField[nidx] = 9999) {
+                    let sharedDistField[nidx] = d + 1;
+                    let sharedBfsQueue[tail] = nidx;
+                    let tail = tail + 1;
                 }
-
-                // Vecino IZQUIERDA
-                if (currCol > 0) {
-                    let nextRow = currRow;
-                    let nextCol = currCol - 1;
-                    let nextIdx = (nextRow * COLS) + nextCol;
-                    if ((parent[nextIdx] = -1) & maze.isPassable(nextRow, nextCol)) {
-                        let parent[nextIdx] = curr;
-                        let queue[tail]     = nextIdx;
-                        let tail = tail + 1;
-                    }
+            }
+            let nr = r; let nc = c - 1;
+            if (maze.isPassable(nr, nc)) {
+                let nidx = (nr * 17) + nc;
+                if (sharedDistField[nidx] = 9999) {
+                    let sharedDistField[nidx] = d + 1;
+                    let sharedBfsQueue[tail] = nidx;
+                    let tail = tail + 1;
                 }
-
-                // Vecino DERECHA
-                if (currCol < (COLS - 1)) {
-                    let nextRow = currRow;
-                    let nextCol = currCol + 1;
-                    let nextIdx = (nextRow * COLS) + nextCol;
-                    if ((parent[nextIdx] = -1) & maze.isPassable(nextRow, nextCol)) {
-                        let parent[nextIdx] = curr;
-                        let queue[tail]     = nextIdx;
-                        let tail = tail + 1;
-                    }
+            }
+            let nr = r; let nc = c + 1;
+            if (maze.isPassable(nr, nc)) {
+                let nidx = (nr * 17) + nc;
+                if (sharedDistField[nidx] = 9999) {
+                    let sharedDistField[nidx] = d + 1;
+                    let sharedBfsQueue[tail] = nidx;
+                    let tail = tail + 1;
                 }
             }
         }
 
-        // Si no hay camino, el enemigo se queda quieto
-        if (~found) { return; }
+        // 4. Elegir el siguiente paso
+        // El enemigo mira las 4 celdas a su alrededor y elige moverse a la que 
+        // tenga el numero mas bajo, es decir, la que este mas cerca del jugador
+        let bestRow  = row;
+        let bestCol  = col;
+        let bestDist = sharedDistField[(row * 17) + col];
 
-        // Reconstruir camino: trazar desde el jugador hasta el enemigo
-        let stepIdx = goalIdx;
-        while (~(parent[stepIdx] = startIdx)) {
-            let stepIdx = parent[stepIdx];
+        let nr = row - 1; let nc = col;
+        if (maze.isPassable(nr, nc)) {
+            let val = sharedDistField[(nr * 17) + nc];
+            if (val < bestDist) { let bestDist = val; let bestRow = nr; let bestCol = nc; }
+        }
+        let nr = row + 1; let nc = col;
+        if (maze.isPassable(nr, nc)) {
+            let val = sharedDistField[(nr * 17) + nc];
+            if (val < bestDist) { let bestDist = val; let bestRow = nr; let bestCol = nc; }
+        }
+        let nr = row; let nc = col - 1;
+        if (maze.isPassable(nr, nc)) {
+            let val = sharedDistField[(nr * 17) + nc];
+            if (val < bestDist) { let bestDist = val; let bestRow = nr; let bestCol = nc; }
+        }
+        let nr = row; let nc = col + 1;
+        if (maze.isPassable(nr, nc)) {
+            let val = sharedDistField[(nr * 17) + nc];
+            if (val < bestDist) { let bestDist = val; let bestRow = nr; let bestCol = nc; }
         }
 
-        let stepRow = stepIdx / COLS;
-        let stepCol = stepIdx - (stepRow * COLS);
-
-        // Borrar el sprite anterior
-        do maze.drawCell(row, col);
-        // Actualizar la posición
-        let row = stepRow;
-        let col = stepCol;
+        // Aplicar movimiento
+        if (~((bestRow = row) & (bestCol = col))) {
+            do maze.drawCell(row, col);
+            let lastRow = row;
+            let lastCol = col;
+            let row     = bestRow;
+            let col     = bestCol;
+        }
         return;
     }
 
     /**
-     * Dibuja el sprite del enemigo: Carita mala negra con rasgos blancos.
+     * Sistema de rescate anti-atascos.
+     * Si el enemigo se queda atrapado rebotando entre dos paredes, intenta moverse
+     * en direcciones alternativas para salir del aprieto.
      */
+    method void tryEscape(int playerRow, int playerCol) {
+        var int candRow, candCol;
+
+        let candRow = row + 1;
+        let candCol = col;
+        if (maze.isPassable(candRow, candCol)) {
+            do maze.drawCell(row, col);
+            let row = candRow; let col = candCol;
+            return;
+        }
+        let candRow = row;
+        let candCol = col + 1;
+        if (maze.isPassable(candRow, candCol)) {
+            do maze.drawCell(row, col);
+            let row = candRow; let col = candCol;
+            return;
+        }
+        let candRow = row;
+        let candCol = col - 1;
+        if (maze.isPassable(candRow, candCol)) {
+            do maze.drawCell(row, col);
+            let row = candRow; let col = candCol;
+            return;
+        }
+        let candRow = row - 1;
+        let candCol = col;
+        if (maze.isPassable(candRow, candCol)) {
+            do maze.drawCell(row, col);
+            let row = candRow; let col = candCol;
+        }
+        return;
+    }
+
+    /*  RENDERIZADO - Sprite segun nivel  */
     method void draw() {
-        var int px, py, margin;
-        let px     = col * cellSize;
-        let py     = row * cellSize;
-        let margin = 3;
+        if (level = 1) { do drawGato(); }
+        if (level = 2) { do drawPerro(); }
+        if (level = 3) { do drawSerpiente(); }
+        return;
+    }
 
-        // Fondo negro de la cara del enemigo
+    /*  SPRITE NIVEL 1 y 2: GATO */
+    method void drawGato() {
+        var int px, py, cx;
+        let px = col * cellSize;
+        let py = row * cellSize;
+        let cx = cellSize / 2;
+
+        // --- Cara negra ---
         do Screen.setColor(true);
-        do Screen.drawRectangle(px + margin, py + margin,
-                                px + cellSize - margin - 1,
-                                py + cellSize - margin - 1);
-
-        // Rasgos blancos
+        do Screen.drawRectangle(px+2, py+5, px+13, py+14);
+        // Suavizar esquinas de la cara
         do Screen.setColor(false);
+        do Screen.drawLine(px+2, py+5, px+2, py+5);
+        do Screen.drawLine(px+13, py+5, px+13, py+5);
+        do Screen.drawLine(px+2, py+14, px+2, py+14);
+        do Screen.drawLine(px+13, py+14, px+13, py+14);
 
-        // Cejas enojadas \ /
-        do Screen.drawLine(px + 4, py + 5, px + 6, py + 6);
-        do Screen.drawLine(px + 8, py + 6, px + 10, py + 5);
+        // --- Orejas ---
+        do Screen.setColor(true);
+        do Screen.drawRectangle(px+3, py+2, px+6, py+4);
+        do Screen.drawRectangle(px+9, py+2, px+12, py+4);
+        // Suavizar orejas
+        do Screen.setColor(false);
+        do Screen.drawLine(px+3, py+2, px+3, py+2); do Screen.drawLine(px+6, py+2, px+6, py+2);
+        do Screen.drawLine(px+9, py+2, px+9, py+2); do Screen.drawLine(px+12, py+2, px+12, py+2);
+        // Interior blanco de las orejas
+        do Screen.drawRectangle(px+4, py+3, px+5, py+4);
+        do Screen.drawRectangle(px+10, py+3, px+11, py+4);
 
-        // Ojos
-        do Screen.drawRectangle(px + 5, py + 7, px + 6, py + 8);
-        do Screen.drawRectangle(px + 8, py + 7, px + 9, py + 8);
+        // --- Ojos grandes (blancos con pupila negra) ---
+        do Screen.setColor(false); // Fondo blanco del ojo
+        do Screen.drawRectangle(px+3, py+7, px+6, py+10);
+        do Screen.drawRectangle(px+9, py+7, px+12, py+10);
+        // Pupilas grandes negras dilatadas
+        do Screen.setColor(true);
+        do Screen.drawRectangle(px+4, py+8, px+5, py+9);
+        do Screen.drawRectangle(px+10, py+8, px+11, py+9);
+        // Brillo en los ojos 
+        do Screen.setColor(false);
+        do Screen.drawLine(px+5, py+8, px+5, py+8);
+        do Screen.drawLine(px+11, py+8, px+11, py+8);
 
-        // Boca 
-        do Screen.drawLine(px + 6, py + 11, px + 8, py + 11);
+        // --- Nariz ---
+        do Screen.drawLine(px+7, py+11, px+8, py+11);
+        
+        // --- Boca  ---
+        do Screen.drawLine(px+7, py+12, px+8, py+12); // linea bajando
+        do Screen.drawLine(px+6, py+13, px+7, py+13); // curva izq
+        do Screen.drawLine(px+8, py+13, px+9, py+13); // curva der
+
+        // --- Bigotitos finos ---
+        do Screen.drawLine(px+1, py+10, px+2, py+10);
+        do Screen.drawLine(px+1, py+11, px+2, py+11);
+        do Screen.drawLine(px+13, py+10, px+14, py+10);
+        do Screen.drawLine(px+13, py+11, px+14, py+11);
 
         return;
     }
 
-    /* ── Destructor ─────────────────────────────────────────────── */
+    /* SPRITE NIVEL 2: GATO 2 */
+    method void drawPerro() {
+        do drawGato();
+        return;
+    }
+
+    /* SPRITE NIVEL 3: GATO 3 */
+    method void drawSerpiente() {
+        var int px, py, m, cx, cy;
+        let px = col * cellSize;
+        let py = row * cellSize;
+        let m  = 1;
+        let cx = cellSize / 2;
+        let cy = cellSize / 2;
+
+        // Cabeza negra
+        do Screen.setColor(true);
+        do Screen.drawRectangle(px+m, py+m+2, px+cellSize-m-1, py+cellSize-m-3);
+        do Screen.drawRectangle(px+m+2, py+m, px+cellSize-m-3, py+cellSize-m-1);
+
+        // Ojos de reptil: horizontales con pupila vertical
+        do Screen.setColor(false);
+        do Screen.drawRectangle(px+3, py+cy-2, px+6, py+cy);
+        do Screen.drawRectangle(px+cellSize-7, py+cy-2, px+cellSize-4, py+cy);
+        // Pupila vertical
+        do Screen.setColor(true);
+        do Screen.drawLine(px+4, py+cy-2, px+4, py+cy);
+        do Screen.drawLine(px+cellSize-5, py+cy-2, px+cellSize-5, py+cy);
+        // Destello ojo
+        do Screen.setColor(false);
+        do Screen.drawRectangle(px+5, py+cy-2, px+5, py+cy-2);
+        do Screen.drawRectangle(px+cellSize-6, py+cy-2, px+cellSize-6, py+cy-2);
+
+        // Escamas: patron de puntos blancos
+        do Screen.drawRectangle(px+cx-1, py+m+3, px+cx, py+m+4);
+        do Screen.drawRectangle(px+cx-3, py+m+5, px+cx-2, py+m+6);
+        do Screen.drawRectangle(px+cx+2, py+m+5, px+cx+3, py+m+6);
+
+        // Lengua bifida blanca (limitada para no salir de celda)
+        do Screen.drawLine(px+cx, py+cellSize-m-4, px+cx, py+cellSize-2);
+        do Screen.drawLine(px+cx, py+cellSize-3, px+cx-2, py+cellSize-1);
+        do Screen.drawLine(px+cx, py+cellSize-3, px+cx+2, py+cellSize-1);
+
+        // Patron de escamas lateral
+        do Screen.drawLine(px+m, py+cy+1, px+m+2, py+cy+2);
+        do Screen.drawLine(px+cellSize-m-2, py+cy+1, px+cellSize-m-4, py+cy+2);
+
+        return;
+    }
+
+    /* Destructor */
+    /**
+     * Limpia la memoria cuando el enemigo ya no se necesita (ej. al cambiar de nivel).
+     */
     method void dispose() {
-        do queue.dispose();
-        do parent.dispose();
+        // Los arreglos de la IA (sharedDistField y sharedBfsQueue) son ESTATICOS, 
+        // lo que significa que se reciclan para todos los niveles y no se borran aqui.
+        // Solo borramos de la memoria a este enemigo en particular.
         do Memory.deAlloc(this);
         return;
     }

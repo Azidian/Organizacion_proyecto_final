@@ -1,0 +1,43 @@
+/**
+ * Random.jack
+ * Generador de números pseudoaleatorios utilizando un Congruencial Lineal (LCG).
+ */
+class Random {
+    static int seed;
+
+    /**
+     * Establece el valor inicial (semilla) para la secuencia aleatoria.
+     * Si usas la misma semilla, siempre saldran los mismos numeros.
+     */
+    function void setSeed(int newSeed) {
+        let seed = newSeed;
+        return;
+    }
+
+    /**
+     * Cambia la semilla sumandole un valor.
+     * Sirve para que el juego se vuelva mas impredecible.
+     */
+    function void addSeed(int amount) {
+        let seed = seed + amount;
+        return;
+    }
+
+    /**
+     * Entrega un numero al azar desde 0 hasta un poco menos que el limite (max - 1).
+     * Por ejemplo, si pides max=5, te puede dar 0, 1, 2, 3 o 4.
+     * @param max Límite de numero maximo (no se incluye en el resultado).
+     */
+    function int nextInt(int max) {
+        var int val;
+        let seed = (seed * 25173) + 13849;
+        let val = seed;
+        if (val < 0) {
+            let val = -val;
+            if (val < 0) {
+                let val = 0;
+            }
+        }
+        return val - ((val / max) * max);
+    }
+}
