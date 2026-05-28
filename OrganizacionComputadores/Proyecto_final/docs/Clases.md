@@ -98,6 +98,10 @@ Punto de entrada del programa. Es deliberadamente mínima: su única responsabil
 
 No contiene ninguna lógica propia. Toda la orquestación está delegada en `Game`. Esta separación asegura que siempre se llame a `dispose()`, incluso si `run()` termina antes de lo esperado.
 
+### Video explicativo:
+
+**https://youtu.be/wKzBs_aFkG8?si=7HzbuFGRPwKN_xgo**  
+
 ---
 
 ## 4. Clase `Game`
