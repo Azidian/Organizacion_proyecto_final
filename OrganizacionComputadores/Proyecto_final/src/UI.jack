@@ -423,3 +423,430 @@ class UI {
         do Screen.drawRectangle(x, y+17, x+12, y+20);
         return;
     }
+
+function void drawLargeNivelTitle(int num) {
+        var int x, y;
+        do Screen.setColor(true);
+        let y = 45; 
+        
+        let x = 195; do Screen.drawRectangle(x, y, x+3, y+20); do Screen.drawRectangle(x+9, y, x+12, y+20); do Screen.drawLine(x+1, y, x+10, y+20);
+        let x = 215; do Screen.drawRectangle(x+4, y, x+7, y+20);
+        let x = 235; do Screen.drawRectangle(x, y, x+3, y+15); do Screen.drawRectangle(x+9, y, x+12, y+15); do Screen.drawRectangle(x+3, y+15, x+9, y+20);
+        let x = 255; do Screen.drawRectangle(x, y, x+3, y+20); do Screen.drawRectangle(x, y, x+12, y+3); do Screen.drawRectangle(x, y+9, x+10, y+12); do Screen.drawRectangle(x, y+17, x+12, y+20);
+        let x = 275; do Screen.drawRectangle(x, y, x+3, y+20); do Screen.drawRectangle(x, y+17, x+12, y+20);
+
+        let x = 305;
+        if (num = 1) { do Screen.drawRectangle(x+4, y, x+7, y+20); do Screen.drawRectangle(x, y, x+5, y+3); }
+        if (num = 2) { do Screen.drawRectangle(x, y, x+12, y+3); do Screen.drawRectangle(x+9, y, x+12, y+10); do Screen.drawRectangle(x, y+9, x+12, y+12); do Screen.drawRectangle(x, y+10, x+3, y+20); do Screen.drawRectangle(x, y+17, x+12, y+20); }
+        if (num = 3) { do Screen.drawRectangle(x, y, x+12, y+3); do Screen.drawRectangle(x+9, y, x+12, y+20); do Screen.drawRectangle(x, y+9, x+12, y+12); do Screen.drawRectangle(x, y+17, x+12, y+20); }
+        return;
+    }
+
+    /* ── PIXEL ART GIGANTE PARA PAUSA (Actualizado para bajarlo un poco) ── */
+    function void drawPauseTitle() {
+        var int x, y; do Screen.setColor(true); 
+        let y = 60; // Cambiado de 45 a 60 para que baje en la pantalla
+        
+        // P
+        let x = 195; do Screen.drawRectangle(x, y, x+3, y+20); do Screen.drawRectangle(x, y, x+12, y+3); do Screen.drawRectangle(x+9, y, x+12, y+10); do Screen.drawRectangle(x, y+9, x+12, y+12);
+        // A
+        let x = 215; do Screen.drawRectangle(x, y, x+3, y+20); do Screen.drawRectangle(x+9, y, x+12, y+20); do Screen.drawRectangle(x, y, x+12, y+3); do Screen.drawRectangle(x, y+9, x+12, y+12);
+        // U
+        let x = 235; do Screen.drawRectangle(x, y, x+3, y+20); do Screen.drawRectangle(x+9, y, x+12, y+20); do Screen.drawRectangle(x, y+17, x+12, y+20);
+        // S
+        let x = 255; do Screen.drawRectangle(x, y, x+12, y+3); do Screen.drawRectangle(x, y, x+3, y+10); do Screen.drawRectangle(x, y+9, x+12, y+12); do Screen.drawRectangle(x+9, y+9, x+12, y+20); do Screen.drawRectangle(x, y+17, x+12, y+20);
+        // A
+        let x = 275; do Screen.drawRectangle(x, y, x+3, y+20); do Screen.drawRectangle(x+9, y, x+12, y+20); do Screen.drawRectangle(x, y, x+12, y+3); do Screen.drawRectangle(x, y+9, x+12, y+12);
+        return;
+    }
+
+    /* ── PIXEL ART: ¡ N I V E L  S U P E R A D O ! ── */
+    function void drawNivelSuperadoTitle() {
+        do Screen.setColor(true);
+        // ¡
+        do Screen.drawRectangle(125, 50, 129, 54);
+        do Screen.drawRectangle(125, 58, 129, 70);
+        // N
+        do Screen.drawRectangle(139, 50, 142, 70);
+        do Screen.drawRectangle(148, 50, 151, 70);
+        do Screen.drawLine(140, 50, 149, 70);
+        do Screen.drawLine(141, 50, 150, 70);
+        // I
+        do Screen.drawRectangle(157, 50, 160, 70);
+        // V
+        do Screen.drawRectangle(167, 50, 170, 65);
+        do Screen.drawRectangle(176, 50, 179, 65);
+        do Screen.drawRectangle(170, 65, 176, 70);
+        // E
+        do Screen.drawRectangle(185, 50, 188, 70);
+        do Screen.drawRectangle(185, 50, 197, 53);
+        do Screen.drawRectangle(185, 59, 195, 62);
+        do Screen.drawRectangle(185, 67, 197, 70);
+        // L
+        do Screen.drawRectangle(203, 50, 206, 70);
+        do Screen.drawRectangle(203, 67, 215, 70);
+
+        // S
+        do Screen.drawRectangle(231, 50, 243, 53);
+        do Screen.drawRectangle(231, 50, 234, 60);
+        do Screen.drawRectangle(231, 58, 243, 61);
+        do Screen.drawRectangle(240, 58, 243, 70);
+        do Screen.drawRectangle(231, 67, 243, 70);
+        // U
+        do Screen.drawRectangle(249, 50, 252, 70);
+        do Screen.drawRectangle(258, 50, 261, 70);
+        do Screen.drawRectangle(249, 67, 261, 70);
+        // P
+        do Screen.drawRectangle(267, 50, 270, 70);
+        do Screen.drawRectangle(267, 50, 279, 53);
+        do Screen.drawRectangle(276, 50, 279, 62);
+        do Screen.drawRectangle(267, 59, 279, 62);
+        // E
+        do Screen.drawRectangle(285, 50, 288, 70);
+        do Screen.drawRectangle(285, 50, 297, 53);
+        do Screen.drawRectangle(285, 59, 295, 62);
+        do Screen.drawRectangle(285, 67, 297, 70);
+        // R
+        do Screen.drawRectangle(303, 50, 306, 70);
+        do Screen.drawRectangle(303, 50, 315, 53);
+        do Screen.drawRectangle(312, 50, 315, 62);
+        do Screen.drawRectangle(303, 59, 315, 62);
+        do Screen.drawRectangle(309, 62, 312, 66);
+        do Screen.drawRectangle(312, 66, 315, 70);
+        // A
+        do Screen.drawRectangle(321, 50, 324, 70);
+        do Screen.drawRectangle(330, 50, 333, 70);
+        do Screen.drawRectangle(321, 50, 333, 53);
+        do Screen.drawRectangle(321, 59, 333, 62);
+        // D
+        do Screen.drawRectangle(339, 50, 342, 70);
+        do Screen.drawRectangle(339, 50, 348, 53);
+        do Screen.drawRectangle(339, 67, 348, 70);
+        do Screen.drawRectangle(348, 53, 351, 67);
+        // O
+        do Screen.drawRectangle(357, 50, 360, 70);
+        do Screen.drawRectangle(366, 50, 369, 70);
+        do Screen.drawRectangle(357, 50, 369, 53);
+        do Screen.drawRectangle(357, 67, 369, 70);
+        // !
+        do Screen.drawRectangle(375, 50, 379, 62);
+        do Screen.drawRectangle(375, 66, 379, 70);
+        return;
+    }
+
+    /* ── PIXEL ART: G A M E  O V E R ── */
+    function void drawGameOverTitle() {
+        var int x, y;
+        do Screen.setColor(true);
+        let y = 50;
+        
+        // G
+        let x = 168;
+        do Screen.drawRectangle(x, y, x+12, y+3);
+        do Screen.drawRectangle(x, y, x+3, y+20);
+        do Screen.drawRectangle(x, y+17, x+12, y+20);
+        do Screen.drawRectangle(x+9, y+10, x+12, y+20);
+        do Screen.drawRectangle(x+6, y+10, x+12, y+13);
+        // A
+        let x = 188;
+        do Screen.drawRectangle(x, y, x+3, y+20);
+        do Screen.drawRectangle(x+9, y, x+12, y+20);
+        do Screen.drawRectangle(x, y, x+12, y+3);
+        do Screen.drawRectangle(x, y+9, x+12, y+12);
+        // M
+        let x = 208;
+        do Screen.drawRectangle(x, y, x+3, y+20);
+        do Screen.drawRectangle(x+12, y, x+15, y+20);
+        do Screen.drawRectangle(x+3, y, x+6, y+5);
+        do Screen.drawRectangle(x+6, y+5, x+9, y+10);
+        do Screen.drawRectangle(x+9, y, x+12, y+5);
+        // E
+        let x = 233;
+        do Screen.drawRectangle(x, y, x+3, y+20);
+        do Screen.drawRectangle(x, y, x+12, y+3);
+        do Screen.drawRectangle(x, y+9, x+10, y+12);
+        do Screen.drawRectangle(x, y+17, x+12, y+20);
+
+        // O
+        let x = 273;
+        do Screen.drawRectangle(x, y, x+3, y+20);
+        do Screen.drawRectangle(x+9, y, x+12, y+20);
+        do Screen.drawRectangle(x, y, x+12, y+3);
+        do Screen.drawRectangle(x, y+17, x+12, y+20);
+        // V
+        let x = 293;
+        do Screen.drawRectangle(x, y, x+3, y+15);
+        do Screen.drawRectangle(x+9, y, x+12, y+15);
+        do Screen.drawRectangle(x+3, y+15, x+9, y+20);
+        // E
+        let x = 313;
+        do Screen.drawRectangle(x, y, x+3, y+20);
+        do Screen.drawRectangle(x, y, x+12, y+3);
+        do Screen.drawRectangle(x, y+9, x+10, y+12);
+        do Screen.drawRectangle(x, y+17, x+12, y+20);
+        // R
+        let x = 333;
+        do Screen.drawRectangle(x, y, x+3, y+20);
+        do Screen.drawRectangle(x, y, x+12, y+3);
+        do Screen.drawRectangle(x+9, y, x+12, y+12);
+        do Screen.drawRectangle(x, y+9, x+12, y+12);
+        do Screen.drawRectangle(x+6, y+12, x+9, y+16);
+        do Screen.drawRectangle(x+9, y+16, x+12, y+20);
+        return;
+    }
+
+    /* ── PIXEL ART: ¡ V I C T O R I A ! ── */
+    function void drawVictoryTitle() {
+        var int x, y;
+        do Screen.setColor(true);
+        let y = 50;
+        
+        // ¡
+        let x = 165;
+        do Screen.drawRectangle(x, y, x+4, y+4);
+        do Screen.drawRectangle(x, y+8, x+4, y+20);
+        // V
+        let x = 180;
+        do Screen.drawRectangle(x, y, x+3, y+15);
+        do Screen.drawRectangle(x+9, y, x+12, y+15);
+        do Screen.drawRectangle(x+3, y+15, x+9, y+20);
+        // I
+        let x = 200;
+        do Screen.drawRectangle(x+4, y, x+7, y+20);
+        // C
+        let x = 215;
+        do Screen.drawRectangle(x, y, x+3, y+20);
+        do Screen.drawRectangle(x, y, x+12, y+3);
+        do Screen.drawRectangle(x, y+17, x+12, y+20);
+        // T
+        let x = 235;
+        do Screen.drawRectangle(x, y, x+12, y+3);
+        do Screen.drawRectangle(x+4, y, x+7, y+20);
+        // O
+        let x = 255;
+        do Screen.drawRectangle(x, y, x+3, y+20);
+        do Screen.drawRectangle(x+9, y, x+12, y+20);
+        do Screen.drawRectangle(x, y, x+12, y+3);
+        do Screen.drawRectangle(x, y+17, x+12, y+20);
+        // R
+        let x = 275;
+        do Screen.drawRectangle(x, y, x+3, y+20);
+        do Screen.drawRectangle(x, y, x+12, y+3);
+        do Screen.drawRectangle(x+9, y, x+12, y+12);
+        do Screen.drawRectangle(x, y+9, x+12, y+12);
+        do Screen.drawRectangle(x+6, y+12, x+9, y+16);
+        do Screen.drawRectangle(x+9, y+16, x+12, y+20);
+        // I
+        let x = 295;
+        do Screen.drawRectangle(x+4, y, x+7, y+20);
+        // A
+        let x = 310;
+        do Screen.drawRectangle(x, y, x+3, y+20);
+        do Screen.drawRectangle(x+9, y, x+12, y+20);
+        do Screen.drawRectangle(x, y, x+12, y+3);
+        do Screen.drawRectangle(x, y+9, x+12, y+12);
+        // !
+        let x = 330;
+        do Screen.drawRectangle(x, y, x+4, y+12);
+        do Screen.drawRectangle(x, y+16, x+4, y+20);
+        return;
+    }
+
+    function void drawVersusIcons(int currentLevel, int py) {
+        var int px1, px2;
+        let px1 = 228; 
+        let px2 = 268; 
+
+        if (currentLevel = 1) {
+            do UI.drawRatonIcon(px1, py);
+            do UI.drawGatoIcon(px2, py);
+        }
+        if (currentLevel = 2) {
+            do UI.drawArdillaIcon(px1, py);
+            do UI.drawGatoIcon(px2, py);
+        }
+        if (currentLevel = 3) {
+            do UI.drawPajaroIcon(px1, py);
+            do UI.drawSerpienteIcon(px2, py);
+        }
+        return;
+    }
+
+    function void drawMiniIcons() {
+        // Nivel 1 (Fila 1)
+        do UI.drawRatonIcon(120, 74);
+        do UI.drawGatoIcon(145, 74);
+        // Nivel 2 (Fila 2)
+        do UI.drawArdillaIcon(120, 118);
+        do UI.drawGatoIcon(145, 118);
+        // Nivel 3 (Fila 3)
+        do UI.drawPajaroIcon(120, 162);
+        do UI.drawSerpienteIcon(145, 162);
+        return;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       DIBUJO DE ICONOS (Mismos Sprites del Juego)
+       ════════════════════════════════════════════════════════════ */
+    function void drawRatonIcon(int px, int py) {
+        do Screen.setColor(false);
+        do Screen.drawRectangle(px+3, py+4, px+12, py+13);
+        do Screen.drawRectangle(px+1, py+1, px+5, py+5);
+        do Screen.drawRectangle(px+10, py+1, px+14, py+5);
+        do Screen.setColor(true);
+        do Screen.drawLine(px+3, py+4, px+12, py+4);
+        do Screen.drawLine(px+3, py+13, px+12, py+13);
+        do Screen.drawLine(px+3, py+4, px+3, py+13);
+        do Screen.drawLine(px+12, py+4, px+12, py+13);
+        do Screen.drawLine(px+1, py+1, px+5, py+1);
+        do Screen.drawLine(px+1, py+5, px+5, py+5);
+        do Screen.drawLine(px+1, py+1, px+1, py+5);
+        do Screen.drawLine(px+5, py+1, px+5, py+5);
+        do Screen.drawLine(px+10, py+1, px+14, py+1);
+        do Screen.drawLine(px+10, py+5, px+14, py+5);
+        do Screen.drawLine(px+10, py+1, px+10, py+5);
+        do Screen.drawLine(px+14, py+1, px+14, py+5);
+        do Screen.drawRectangle(px+5, py+6, px+6, py+7);
+        do Screen.drawRectangle(px+9, py+6, px+10, py+7);
+        do Screen.drawRectangle(px+7, py+9, px+8, py+9);
+        do Screen.drawLine(px+2, py+9, px+4, py+9);
+        do Screen.drawLine(px+2, py+10, px+4, py+10);
+        do Screen.drawLine(px+11, py+9, px+13, py+9);
+        do Screen.drawLine(px+11, py+10, px+13, py+10);
+        do Screen.drawLine(px+6, py+11, px+8, py+12);
+        do Screen.drawLine(px+8, py+12, px+10, py+11);
+        return;
+    }
+
+    function void drawGatoIcon(int px, int py) {
+        do Screen.setColor(true);
+        do Screen.drawRectangle(px+2, py+5, px+13, py+14);
+        do Screen.setColor(false);
+        do Screen.drawLine(px+2, py+5, px+2, py+5);
+        do Screen.drawLine(px+13, py+5, px+13, py+5);
+        do Screen.drawLine(px+2, py+14, px+2, py+14);
+        do Screen.drawLine(px+13, py+14, px+13, py+14);
+        do Screen.setColor(true);
+        do Screen.drawRectangle(px+3, py+2, px+6, py+4);
+        do Screen.drawRectangle(px+9, py+2, px+12, py+4);
+        do Screen.setColor(false);
+        do Screen.drawLine(px+3, py+2, px+3, py+2); do Screen.drawLine(px+6, py+2, px+6, py+2);
+        do Screen.drawLine(px+9, py+2, px+9, py+2); do Screen.drawLine(px+12, py+2, px+12, py+2);
+        do Screen.drawRectangle(px+4, py+3, px+5, py+4);
+        do Screen.drawRectangle(px+10, py+3, px+11, py+4);
+        do Screen.drawRectangle(px+3, py+7, px+6, py+10);
+        do Screen.drawRectangle(px+9, py+7, px+12, py+10);
+        do Screen.setColor(true);
+        do Screen.drawRectangle(px+4, py+8, px+5, py+9);
+        do Screen.drawRectangle(px+10, py+8, px+11, py+9);
+        do Screen.setColor(false);
+        do Screen.drawLine(px+5, py+8, px+5, py+8);
+        do Screen.drawLine(px+11, py+8, px+11, py+8);
+        do Screen.setColor(true);
+        do Screen.drawLine(px+7, py+11, px+8, py+11);
+        do Screen.drawLine(px+7, py+12, px+8, py+12);
+        do Screen.drawLine(px+6, py+13, px+7, py+13);
+        do Screen.drawLine(px+8, py+13, px+9, py+13);
+        do Screen.drawLine(px+1, py+10, px+2, py+10);
+        do Screen.drawLine(px+1, py+11, px+2, py+11);
+        do Screen.drawLine(px+13, py+10, px+14, py+10);
+        do Screen.drawLine(px+13, py+11, px+14, py+11);
+        return;
+    }
+
+    function void drawArdillaIcon(int px, int py) {
+        do Screen.setColor(true);
+        do Screen.drawRectangle(px+10, py+1, px+15, py+12);
+        do Screen.setColor(false);
+        do Screen.drawLine(px+14, py+1, px+15, py+2);
+        do Screen.drawLine(px+14, py+11, px+15, py+12);
+        do Screen.setColor(true);
+        do Screen.drawLine(px+11, py+3, px+14, py+3);
+        do Screen.drawLine(px+12, py+6, px+15, py+6);
+        do Screen.drawLine(px+11, py+9, px+14, py+9);
+        do Screen.drawRectangle(px+2, py+5, px+13, py+14);
+        do Screen.setColor(false);
+        do Screen.drawRectangle(px+3, py+6, px+12, py+13);
+        do Screen.setColor(true);
+        do Screen.drawRectangle(px+1, py+8, px+3, py+12);
+        do Screen.drawRectangle(px+12, py+8, px+14, py+12);
+        do Screen.setColor(false);
+        do Screen.drawRectangle(px+2, py+9, px+3, py+11);
+        do Screen.drawRectangle(px+12, py+9, px+13, py+11);
+        do Screen.setColor(true);
+        do Screen.drawRectangle(px+3, py+3, px+5, py+5);
+        do Screen.drawRectangle(px+10, py+3, px+12, py+5);
+        do Screen.setColor(false);
+        do Screen.drawRectangle(px+4, py+4, px+4, py+4);
+        do Screen.drawRectangle(px+11, py+4, px+11, py+4);
+        do Screen.setColor(true);
+        do Screen.drawRectangle(px+4, py+7, px+6, py+9);
+        do Screen.drawRectangle(px+9, py+7, px+11, py+9);
+        do Screen.setColor(false);
+        do Screen.drawRectangle(px+5, py+7, px+5, py+7);
+        do Screen.drawRectangle(px+10, py+7, px+10, py+7);
+        do Screen.setColor(true);
+        do Screen.drawLine(px+7, py+10, px+8, py+10);
+        do Screen.drawRectangle(px+6, py+11, px+9, py+13);
+        do Screen.setColor(false);
+        do Screen.drawRectangle(px+7, py+12, px+8, py+12);
+        do Screen.setColor(true);
+        do Screen.drawLine(px+7, py+11, px+7, py+13);
+        return;
+    }
+
+    function void drawSerpienteIcon(int px, int py) {
+        do Screen.setColor(true);
+        do Screen.drawRectangle(px+1, py+3, px+14, py+13);
+        do Screen.drawRectangle(px+3, py+1, px+12, py+15);
+        do Screen.setColor(false);
+        do Screen.drawRectangle(px+3, py+6, px+6, py+8);
+        do Screen.drawRectangle(px+9, py+6, px+12, py+8);
+        do Screen.setColor(true);
+        do Screen.drawLine(px+4, py+6, px+4, py+8);
+        do Screen.drawLine(px+11, py+6, px+11, py+8);
+        do Screen.setColor(false);
+        do Screen.drawRectangle(px+5, py+6, px+5, py+6);
+        do Screen.drawRectangle(px+10, py+6, px+10, py+6);
+        do Screen.drawRectangle(px+7, py+4, px+8, py+5);
+        do Screen.drawRectangle(px+5, py+6, px+6, py+7);
+        do Screen.drawRectangle(px+10, py+6, px+11, py+7);
+        do Screen.setColor(true);
+        do Screen.drawLine(px+8, py+12, px+8, py+15);
+        do Screen.drawLine(px+8, py+14, px+6, py+16);
+        do Screen.drawLine(px+8, py+14, px+10, py+16);
+        do Screen.setColor(false);
+        do Screen.drawLine(px+1, py+9, px+3, py+10);
+        do Screen.drawLine(px+14, py+9, px+12, py+10);
+        return;
+    }
+
+    function void drawPajaroIcon(int px, int py) {
+        do Screen.setColor(true);
+        do Screen.drawLine(px+6, py+2, px+8, py);
+        do Screen.drawLine(px+8, py, px+10, py+2);
+        do Screen.drawLine(px+7, py+3, px+8, py+1);
+        do Screen.drawLine(px+8, py+1, px+9, py+3);
+        do Screen.setColor(false);
+        do Screen.drawRectangle(px+2, py+3, px+13, py+14);
+        do Screen.setColor(true);
+        do Screen.drawLine(px+2, py+3, px+13, py+3);
+        do Screen.drawLine(px+2, py+14, px+13, py+14);
+        do Screen.drawLine(px+2, py+3, px+2, py+14);
+        do Screen.drawLine(px+13, py+3, px+13, py+14);
+        do Screen.drawRectangle(px+4, py+5, px+6, py+7);
+        do Screen.setColor(false);
+        do Screen.drawRectangle(px+5, py+6, px+5, py+6);
+        do Screen.setColor(true);
+        do Screen.drawRectangle(px+9, py+5, px+11, py+7);
+        do Screen.setColor(false);
+        do Screen.drawRectangle(px+10, py+6, px+10, py+6);
+        do Screen.setColor(true);
+        do Screen.drawLine(px+6, py+8, px+10, py+8);
+        do Screen.drawLine(px+6, py+8, px+8, py+11);
+        do Screen.drawLine(px+10, py+8, px+8, py+11);
+        do Screen.drawLine(px+3, py+12, px+5, py+13);
+        do Screen.drawLine(px+12, py+12, px+10, py+13);
+        return;
+    }
+}
