@@ -100,7 +100,7 @@ No contiene ninguna lógica propia. Toda la orquestación está delegada en `Gam
 
 ### Video explicativo:
 
-**https://youtu.be/wKzBs_aFkG8?si=7HzbuFGRPwKN_xgo**  
+ **https://youtu.be/wKzBs_aFkG8?si=7HzbuFGRPwKN_xgo**  
 
 ---
 
@@ -262,6 +262,9 @@ Dibuja la celda de salida como un rectángulo blanco (pasillo) con una **X** for
 #### `method void dispose()`
 Libera en orden todos los objetos vivos: `maze`, `player`, `enemy1`, `enemy2`, y finalmente el propio objeto `Game` con `Memory.deAlloc(this)`. Se llama desde `Main.main()` al terminar la ejecución.
 
+### Video explicativo:
+
+**https://youtu.be/OSD-7_3vpx4** 
 ---
 
 ## 5. Clase `Maze`
