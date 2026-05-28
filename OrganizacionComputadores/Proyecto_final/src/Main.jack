@@ -1,6 +1,6 @@
 /**
  * Main.jack
- * Punto de entrada de Maze Intelligence - 5 niveles con tematicas.
+ * Punto de entrada de Maze Intelligence - 3 niveles con tematicas.
  */
 class Main {
     function void main() {
