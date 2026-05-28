@@ -1,7 +1,6 @@
 /**
  * Main.jack
- * Punto de entrada del juego Maze Intelligence.
- * Inicializa y ejecuta el game loop principal.
+ * Punto de entrada de Maze Intelligence - 3 niveles con tematicas.
  */
 class Main {
     function void main() {

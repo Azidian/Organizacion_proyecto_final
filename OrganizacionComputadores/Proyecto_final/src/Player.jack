@@ -1,114 +1,294 @@
 /**
  * Player.jack
- * Representa al jugador humano controlado por teclado.
+ * Representa al jugador controlado por teclado (W/A/S/D o flechas).
  *
- * Sprite: cuadrado de (CELL_SIZE-2) px relleno centrado en la celda.
- * Teclas: W/A/S/D o flechas del cursor.
+ * SPRITES segun nivel (el jugador ES la presa):
+ * Nivel 1 - Raton:  cara redonda con orejas grandes y bigotes 
+ * Nivel 2 - Ardilla: cara con mejillas y cola imaginada
+ * Nivel 3 - Pajaro:  cara con pico triangular y copete
  *
- * Keycodes Jack estándar:
- *   130 = ArrowLeft   131 = ArrowUp
- *   132 = ArrowRight  133 = ArrowDown
- *   65  = 'a'         68  = 'd'
- *   87  = 'w'         83  = 's'
+ * Keycodes Jack:
+ * 130=ArrowLeft  131=ArrowUp  132=ArrowRight  133=ArrowDown
+ * 65='A'  68='D'  87='W'  83='S'
+ * 97='a' 100='d' 119='w' 115='s'
+ *
+ * TIEMPOS: el jugador responde cada tick (16ms), es decir ~100ms efectivos
+ * porque el game loop espera Sys.wait(16) y el jugador mueve a cada presion.
  */
 class Player {
 
-    field int row, col;         // posición en el grid
-    field Maze maze;            // referencia al laberinto
-    field int cellSize;         // píxeles por celda (cache)
+    field int  row, col;
+    field Maze maze;
+    field int  cellSize;
+    field int  level;
+    field int  moveDelay;   // ticks entre movimientos del jugador
+    field int  moveTimer;
+    field int  lastDir;     // Ultima tecla/direccion presionada
+    field int  dirRow, dirCol; // Direccion de movimiento actual (para IA predictiva)
 
-    /* ── Constructor ────────────────────────────────────────────── */
-    constructor Player new(Maze theMaze, int startRow, int startCol) {
-        let maze     = theMaze;
-        let row      = startRow;
-        let col      = startCol;
-        let cellSize = maze.getCellSize();
+    /* ── Constructor ─────────────────────────────────────────────── */
+    constructor Player new(Maze theMaze, int startRow, int startCol, int interval, int lvl) {
+        let maze      = theMaze;
+        let row       = startRow;
+        let col       = startCol;
+        let cellSize  = maze.getCellSize();
+        let level     = lvl;
+        let moveTimer = 0;
+        let moveDelay = interval; 
+        let lastDir   = 0;
+        let dirRow    = 0;
+        let dirCol    = 0;
+
         return this;
     }
 
-    /* ── Getters ────────────────────────────────────────────────── */
+    /* ── Getters ─────────────────────────────────────────────────── */
     method int getRow() { return row; }
     method int getCol() { return col; }
-
-    /* ── Input y movimiento ─────────────────────────────────────── */
+    method int getDirRow() { return dirRow; }
+    method int getDirCol() { return dirCol; }
 
     /**
-     * Lee el teclado y mueve al jugador si la celda destino es libre.
-     * Devuelve true si se produjo movimiento (para re-dibujar).
+     * Mapea códigos de tecla a un valor de dirección lógico:
+     * 1: Arriba, 2: Abajo, 3: Izquierda, 4: Derecha, 0: Ninguno/Otro
      */
-    method boolean handleInput() {
-        var int key;
-        var int newRow, newCol;
-        var boolean moved;
-
-        let key    = Keyboard.keyPressed();
-        let newRow = row;
-        let newCol = col;
-        let moved  = false;
-
-        // Arriba: W (87) o ArrowUp (131)
-        if ((key = 87) | (key = 131)) { let newRow = row - 1; }
-        // Abajo: S (83) o ArrowDown (133)
-        if ((key = 83) | (key = 133)) { let newRow = row + 1; }
-        // Izquierda: A (65) o ArrowLeft (130)
-        if ((key = 65) | (key = 130)) { let newCol = col - 1; }
-        // Derecha: D (68) o ArrowRight (132)
-        if ((key = 68) | (key = 132)) { let newCol = col + 1; }
-
-        if (maze.isPassable(newRow, newCol)) {
-            if ((newRow = row) & (newCol = col)) {
-                // Sin cambio
-            } else {
-                do maze.drawCell(row, col); // borrar posición anterior
-                let row  = newRow;
-                let col  = newCol;
-                let moved = true;
-            }
-        }
-        return moved;
+    method int getDirectionFromKey(int k) {
+        if ((k = 87) | (k = 119) | (k = 131)) { return 1; } // W / w / Flecha Arriba
+        if ((k = 83) | (k = 115) | (k = 133)) { return 2; } // S / s / Flecha Abajo
+        if ((k = 65) | (k = 97)  | (k = 130)) { return 3; } // A / a / Flecha Izquierda
+        if ((k = 68) | (k = 100) | (k = 132)) { return 4; } // D / d / Flecha Derecha
+        return 0;
     }
 
-    /* ── Renderizado ────────────────────────────────────────────── */
+    /* ── Input y movimiento ──────────────────────────────────────── */
+    method boolean handleInput() {
+        var int key, dir;
+        var int newRow, newCol;
 
-    /**
-     * Dibuja el sprite del jugador (cuadrado blanco con borde negro)
-     * centrado en su celda actual.
-     */
-    /**
-     * Dibuja el sprite del jugador: Carita feliz blanca con borde negro.
-     */
+        let key = Keyboard.keyPressed();
+        let dir = getDirectionFromKey(key);
+
+        // Si cambia de direccion, eliminamos instantáneamente el retardo
+        if ((dir > 0) & (~(dir = lastDir))) {
+            let moveTimer = moveDelay;
+        }
+        let lastDir = dir;
+
+        let moveTimer = moveTimer + 1;
+        if (moveTimer < moveDelay) { return false; }
+
+        let newRow = row;
+        let newCol = col;
+
+        if (dir = 1) { let newRow = row - 1; }
+        if (dir = 2) { let newRow = row + 1; }
+        if (dir = 3) { let newCol = col - 1; }
+        if (dir = 4) { let newCol = col + 1; }
+
+        if (maze.isPassable(newRow, newCol)) {
+            if (~((newRow = row) & (newCol = col))) {
+                // Actualizar dirección del último movimiento exitoso
+                let dirRow = newRow - row;
+                let dirCol = newCol - col;
+
+                do maze.drawCell(row, col);
+                let row = newRow;
+                let col = newCol;
+                let moveTimer = 0;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /* ── Renderizado: selecciona sprite por nivel ─────────────────── */
     method void draw() {
-        var int px, py, margin;
-        let px     = col * cellSize;
-        let py     = row * cellSize;
-        let margin = 3;
+        if (level = 1) { do drawRaton(); }
+        if (level = 2) { do drawArdilla(); }
+        if (level = 3) { do drawPajaro(); }
+        return;
+    }
 
-        // Fondo blanco de la cara
+    /* ─────────────────────────────────────────────────────────────
+       SPRITE NIVEL 1: RATON
+       Cara blanca redondeada, orejas circulares grandes, bigotes 
+       ───────────────────────────────────────────────────────────── */
+    method void drawRaton() {
+        var int px, py, cx, cy;
+        let px = col * cellSize;
+        let py = row * cellSize;
+        let cx = cellSize / 2;
+        let cy = cellSize / 2;
+
+        // Cara blanca rellena (cuerpo principal)
         do Screen.setColor(false);
-        do Screen.drawRectangle(px + margin, py + margin,
-                                px + cellSize - margin - 1,
-                                py + cellSize - margin - 1);
+        do Screen.drawRectangle(px+3, py+4, px+cellSize-4, py+cellSize-3);
 
-        // Borde negro exterior
+        // Orejas grandes circulares (dos circulos blancos arriba)
+        do Screen.drawRectangle(px+1, py+1, px+5, py+5);
+        do Screen.drawRectangle(px+cellSize-6, py+1, px+cellSize-2, py+5);
+
+        // Borde negro de la cara
         do Screen.setColor(true);
-        do Screen.drawLine(px + margin, py + margin, px + cellSize - margin - 1, py + margin);
-        do Screen.drawLine(px + margin, py + cellSize - margin - 1, px + cellSize - margin - 1, py + cellSize - margin - 1);
-        do Screen.drawLine(px + margin, py + margin, px + margin, py + cellSize - margin - 1);
-        do Screen.drawLine(px + cellSize - margin - 1, py + margin, px + cellSize - margin - 1, py + cellSize - margin - 1);
+        do Screen.drawLine(px+3, py+4, px+cellSize-4, py+4);
+        do Screen.drawLine(px+3, py+cellSize-3, px+cellSize-4, py+cellSize-3);
+        do Screen.drawLine(px+3, py+4, px+3, py+cellSize-3);
+        do Screen.drawLine(px+cellSize-4, py+4, px+cellSize-4, py+cellSize-3);
 
-        // Ojos negros
-        do Screen.drawRectangle(px + 5, py + 6, px + 6, py + 7);
-        do Screen.drawRectangle(px + 9, py + 6, px + 10, py + 7);
+        // Borde orejas
+        do Screen.drawLine(px+1, py+1, px+5, py+1);
+        do Screen.drawLine(px+1, py+5, px+5, py+5);
+        do Screen.drawLine(px+1, py+1, px+1, py+5);
+        do Screen.drawLine(px+5, py+1, px+5, py+5);
+        do Screen.drawLine(px+cellSize-6, py+1, px+cellSize-2, py+1);
+        do Screen.drawLine(px+cellSize-6, py+5, px+cellSize-2, py+5);
+        do Screen.drawLine(px+cellSize-6, py+1, px+cellSize-6, py+5);
+        do Screen.drawLine(px+cellSize-2, py+1, px+cellSize-2, py+5);
 
-        // Sonrisa (boca feliz)
-        do Screen.drawLine(px + 6, py + 10, px + 8, py + 10);
-        do Screen.drawLine(px + 5, py + 9, px + 6, py + 10);
-        do Screen.drawLine(px + 8, py + 10, px + 9, py + 9);
+        // Ojos negros pequeños
+        do Screen.drawRectangle(px+5, py+6, px+6, py+7);
+        do Screen.drawRectangle(px+cellSize-7, py+6, px+cellSize-6, py+7);
+
+        // Nariz (puntito negro)
+        do Screen.drawRectangle(px+cx-1, py+9, px+cx, py+9);
+
+        // Bigotes finos horizontales
+        do Screen.drawLine(px+2, py+9, px+4, py+9);
+        do Screen.drawLine(px+2, py+10, px+4, py+10);
+        do Screen.drawLine(px+cellSize-5, py+9, px+cellSize-3, py+9);
+        do Screen.drawLine(px+cellSize-5, py+10, px+cellSize-3, py+10);
+
+        // Boca sonriente
+        do Screen.drawLine(px+cx-2, py+11, px+cx, py+12);
+        do Screen.drawLine(px+cx, py+12, px+cx+2, py+11);
 
         return;
     }
 
-    /* ── Destructor ─────────────────────────────────────────────── */
+    /* ─────────────────────────────────────────────────────────────
+       SPRITE NIVEL 2: ARDILLA
+       Cola muy esponjosa, mejillas gorditas, 
+       ojos negros con brillo, y dientes tiernos.
+       ───────────────────────────────────────────────────────────── */
+    method void drawArdilla() {
+        var int px, py, cx;
+        let px = col * cellSize;
+        let py = row * cellSize;
+        let cx = cellSize / 2;
+
+        // --- Cola esponjosa (detrás) ---
+        do Screen.setColor(true);
+        do Screen.drawRectangle(px+10, py+1, px+15, py+12);
+        // Suavizar bordes para hacerla redonda
+        do Screen.setColor(false);
+        do Screen.drawLine(px+14, py+1, px+15, py+2);
+        do Screen.drawLine(px+14, py+11, px+15, py+12);
+        // Textura esponjosa
+        do Screen.drawLine(px+11, py+3, px+14, py+3);
+        do Screen.drawLine(px+12, py+6, px+15, py+6);
+        do Screen.drawLine(px+11, py+9, px+14, py+9);
+
+        // --- Cara redonda (blanca) ---
+        do Screen.setColor(true); // Borde
+        do Screen.drawRectangle(px+2, py+5, px+13, py+14);
+        do Screen.setColor(false); // Relleno
+        do Screen.drawRectangle(px+3, py+6, px+12, py+13);
+
+        // --- Mejillas muy gordas ---
+        do Screen.setColor(true);
+        do Screen.drawRectangle(px+1, py+8, px+3, py+12); // Borde mejilla izq
+        do Screen.drawRectangle(px+12, py+8, px+14, py+12); // Borde mejilla der
+        do Screen.setColor(false);
+        do Screen.drawRectangle(px+2, py+9, px+3, py+11); // Relleno mejilla izq
+        do Screen.drawRectangle(px+12, py+9, px+13, py+11); // Relleno mejilla der
+
+        // --- Orejas tiernas ---
+        do Screen.setColor(true);
+        do Screen.drawRectangle(px+3, py+3, px+5, py+5);
+        do Screen.drawRectangle(px+10, py+3, px+12, py+5);
+        do Screen.setColor(false);
+        do Screen.drawRectangle(px+4, py+4, px+4, py+4); // interior blanco
+        do Screen.drawRectangle(px+11, py+4, px+11, py+4);
+
+        // --- Ojos grandes tiernos ---
+        do Screen.setColor(true);
+        do Screen.drawRectangle(px+4, py+7, px+6, py+9); // 3x3 ojo
+        do Screen.drawRectangle(px+9, py+7, px+11, py+9); 
+        // Brillo (Glint) blanco
+        do Screen.setColor(false);
+        do Screen.drawRectangle(px+5, py+7, px+5, py+7);
+        do Screen.drawRectangle(px+10, py+7, px+10, py+7);
+
+        // --- Nariz ---
+        do Screen.setColor(true);
+        do Screen.drawLine(px+7, py+10, px+8, py+10);
+
+        // --- Dientes (buck teeth) ---
+        do Screen.setColor(true);
+        do Screen.drawRectangle(px+6, py+11, px+9, py+13); // borde exterior
+        do Screen.setColor(false);
+        do Screen.drawRectangle(px+7, py+12, px+8, py+12); // centro blanco
+        // linea negra divisoria
+        do Screen.setColor(true);
+        do Screen.drawLine(px+7, py+11, px+7, py+13); 
+
+        return;
+    }
+
+    /* ─────────────────────────────────────────────────────────────
+       SPRITE NIVEL 3: PAJARO
+       Cara simetrica frontal, pico centrado hacia abajo, copete arriba
+       ───────────────────────────────────────────────────────────── */
+    method void drawPajaro() {
+        var int px, py, cx, cy;
+        let px = col * cellSize;
+        let py = row * cellSize;
+        let cx = cellSize / 2;
+        let cy = cellSize / 2;
+
+        // Copete (plumas arriba, centrado)
+        do Screen.setColor(true);
+        do Screen.drawLine(px+cx-2, py+2, px+cx, py);
+        do Screen.drawLine(px+cx, py, px+cx+2, py+2);
+        do Screen.drawLine(px+cx-1, py+3, px+cx, py+1);
+        do Screen.drawLine(px+cx, py+1, px+cx+1, py+3);
+
+        // Cara blanca ovalada (rectangulo principal)
+        do Screen.setColor(false);
+        do Screen.drawRectangle(px+2, py+3, px+cellSize-3, py+cellSize-2);
+
+        // Borde cara
+        do Screen.setColor(true);
+        do Screen.drawLine(px+2, py+3, px+cellSize-3, py+3);
+        do Screen.drawLine(px+2, py+cellSize-2, px+cellSize-3, py+cellSize-2);
+        do Screen.drawLine(px+2, py+3, px+2, py+cellSize-2);
+        do Screen.drawLine(px+cellSize-3, py+3, px+cellSize-3, py+cellSize-2);
+
+        // Ojo Izquierdo simetrico
+        do Screen.drawRectangle(px+4, py+5, px+6, py+7);
+        do Screen.setColor(false);
+        do Screen.drawRectangle(px+5, py+6, px+5, py+6);
+
+        // Ojo Derecho simetrico
+        do Screen.setColor(true);
+        do Screen.drawRectangle(px+cellSize-7, py+5, px+cellSize-5, py+7);
+        do Screen.setColor(false);
+        do Screen.drawRectangle(px+cellSize-6, py+6, px+cellSize-6, py+6);
+
+        // Pico triangular centrado apuntando hacia abajo
+        do Screen.setColor(true);
+        do Screen.drawLine(px+cx-2, py+8, px+cx+2, py+8);
+        do Screen.drawLine(px+cx-2, py+8, px+cx, py+11);
+        do Screen.drawLine(px+cx+2, py+8, px+cx, py+11);
+
+        // Plumas del ala (lineas en la parte inferior, simetricas)
+        do Screen.drawLine(px+3, py+cellSize-4, px+5, py+cellSize-3);
+        do Screen.drawLine(px+cellSize-4, py+cellSize-4, px+cellSize-6, py+cellSize-3);
+
+        return;
+    }
+
+    /* ── Destructor ──────────────────────────────────────────────── */
     method void dispose() {
         do Memory.deAlloc(this);
         return;
