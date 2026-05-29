@@ -91,3 +91,13 @@ Fase de depuración y optimización técnica. El enfoque principal fue auditar e
 
 ### Descripción
 Cierre del ciclo de desarrollo. Se redactó y adjuntó toda la documentación técnica y de usuario requerida para la entrega final. Paralelamente, se limpió el repositorio eliminando entornos de prueba y archivos innecesarios para dejar una versión de producción pulida y lista para ser compilada.
+
+## [1.8.0] - 2026-05-28
+
+### Agregado
+* **Material Audiovisual Educativo:** Inclusión de videos explicativos detallados para cada una de las clases principales (`Main`, `Game`, `Player`, `Maze`, `Enemy` y `Random`) detallando su lógica interna y acoplamiento estructural.
+* **Integridad de Archivos (`.md5`):** Generación e integración de las sumas de verificación en formato `.md5` para todos los binarios y archivos fuentes compilados, garantizando la validación de la entrega.
+
+### Descripción
+Fase de validación, auditoría y entrega final. Se grabó y estructuró un conjunto de guiones y material en video para sustentar de manera clara y comprensible el funcionamiento interno de cada módulo del software, facilitando la comprensión de la lógica del ciclo de juego, la inteligencia artificial de persecución y la gestión de aleatoriedad. Adicionalmente, se implementó un control de integridad técnica mediante archivos de verificación criptográfica de datos (`.md5`), asegurando que los archivos entregados correspondan fielmente a la versión final de producción sin alteraciones ni corrupciones durante la transferencia.
+
