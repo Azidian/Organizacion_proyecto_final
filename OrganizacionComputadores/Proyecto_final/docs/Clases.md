@@ -99,8 +99,8 @@ Punto de entrada del programa. Es deliberadamente mínima: su única responsabil
 No contiene ninguna lógica propia. Toda la orquestación está delegada en `Game`. Esta separación asegura que siempre se llame a `dispose()`, incluso si `run()` termina antes de lo esperado.
 
 ### Video explicativo:
-
  **https://youtu.be/wKzBs_aFkG8?si=7HzbuFGRPwKN_xgo**  
+
 
 ---
 
@@ -263,8 +263,8 @@ Dibuja la celda de salida como un rectángulo blanco (pasillo) con una **X** for
 Libera en orden todos los objetos vivos: `maze`, `player`, `enemy1`, `enemy2`, y finalmente el propio objeto `Game` con `Memory.deAlloc(this)`. Se llama desde `Main.main()` al terminar la ejecución.
 
 ### Video explicativo:
-
 **https://youtu.be/OSD-7_3vpx4** 
+
 ---
 
 ## 5. Clase `Maze`
@@ -336,6 +336,11 @@ Redibuja **únicamente** la celda indicada con su color correcto. Es usada por `
 
 #### `method void dispose()`
 Libera el array `map` con `map.dispose()` y luego el propio objeto con `Memory.deAlloc(this)`.
+
+
+#### Vídeo Explicativo:
+**https://youtu.be/wZLwARiHJT4**
+
 
 ---
 
@@ -422,6 +427,7 @@ Sprite de un pájaro visto de frente:
 
 #### `method void dispose()`
 Libera el objeto con `Memory.deAlloc(this)`.
+
 
 ---
 
