@@ -529,6 +529,11 @@ Sprite de una serpiente de aspecto reptiliano:
 - Lengua bífida blanca en la parte inferior, formada por tres líneas: un tronco central y dos ramas divergentes.
 - Patrón de escamas laterales formado por líneas diagonales.
 
+
+#### Vídeo Explicativo:
+**https://youtu.be/4ykqxIPNZ8w**
+
+
 ---
 
 ## 8. Clase `UI`
