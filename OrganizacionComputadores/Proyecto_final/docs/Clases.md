@@ -428,6 +428,10 @@ Sprite de un pájaro visto de frente:
 #### `method void dispose()`
 Libera el objeto con `Memory.deAlloc(this)`.
 
+### Video explicativo
+
+**https://youtu.be/ZxsLRNG3gok?si=mCAVFk27iRliF00d**
+
 
 ---
 
