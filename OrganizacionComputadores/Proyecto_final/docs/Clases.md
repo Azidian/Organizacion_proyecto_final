@@ -714,6 +714,9 @@ Genera y retorna el siguiente número pseudoaleatorio en el rango `[0, max - 1]`
 
 **Nota:** La uniformidad de la distribución no es perfecta (sesgo del módulo), pero es suficiente para las necesidades de un videojuego sencillo.
 
+### Video explicativo:
+ **https://youtu.be/7u66ak9jgdk**  
+
 ---
 
 ## 10. Resumen de interacciones entre clases
